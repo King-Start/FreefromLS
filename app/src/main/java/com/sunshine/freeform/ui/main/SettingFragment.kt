@@ -28,8 +28,6 @@ import com.sunshine.freeform.ui.freeform.FreeformView
 import com.sunshine.freeform.ui.permission.PermissionActivity
 import com.sunshine.freeform.ui.view.IntegerSimpleMenuPreference
 import com.sunshine.freeform.utils.PermissionUtils
-import kotlin.math.min
-import kotlin.math.roundToInt
 
 class SettingFragment : PreferenceFragmentCompat(), Preference.OnPreferenceClickListener,
     Preference.OnPreferenceChangeListener {
@@ -65,6 +63,7 @@ class SettingFragment : PreferenceFragmentCompat(), Preference.OnPreferenceClick
         findPreference<Preference>(QUICK_FLOATING_APP)!!.onPreferenceClickListener = this
         findPreference<Preference>(NOTIFICATION_FREEFORM_APPS)!!.onPreferenceClickListener = this
         findPreference<Preference>(RESET_OVERLAY_SETTING)!!.onPreferenceClickListener = this
+        findPreference<Preference>(RESET_ALL_WINDOWS)!!.onPreferenceClickListener = this
         findPreference<SwitchPreference>(SHOW_FLOATING)!!.onPreferenceChangeListener = this
         findPreference<SwitchPreference>(NOTIFY_FREEFORM)!!.onPreferenceChangeListener = this
         findPreference<SwitchPreference>(AUTO_MINIMIZE_ON_CALL)!!.onPreferenceChangeListener = this
@@ -82,18 +81,23 @@ class SettingFragment : PreferenceFragmentCompat(), Preference.OnPreferenceClick
             NOTIFICATION_FREEFORM_APPS -> {
                 requireActivity().startActivity(Intent(requireActivity(), ChooseAppsActivity::class.java).putExtra("type", 2))
             }
+            RESET_ALL_WINDOWS -> {
+                requireContext().startService(
+                    Intent(requireContext(), com.sunshine.freeform.ui.freeform.FreeformService::class.java)
+                        .setAction(com.sunshine.freeform.ui.freeform.FreeformService.ACTION_DESTROY_ALL_FREEFORM)
+                )
+                Snackbar.make(requireView(), getString(R.string.reset_all_windows), Snackbar.LENGTH_SHORT).show()
+            }
             RESET_OVERLAY_SETTING -> {
                 sp.edit().apply {
-                    val screenWidth = min(requireContext().resources.displayMetrics.heightPixels, requireContext().resources.displayMetrics.widthPixels)
-
-                    putInt("floating_position_portrait_y", 0)
-                    putInt("floating_position_landscape_y", 0)
-                    putInt(FreeformView.REMEMBER_X, 0)
-                    putInt(FreeformView.REMEMBER_Y, 0)
-                    putInt(FreeformView.REMEMBER_LAND_X, 0)
-                    putInt(FreeformView.REMEMBER_LAND_Y, 0)
-                    putInt(FreeformView.REMEMBER_HEIGHT, (screenWidth * 1.6 * 0.75).roundToInt())
-                    putInt(FreeformView.REMEMBER_LAND_HEIGHT, (screenWidth * 0.8).roundToInt())
+                    remove("floating_position_portrait_y")
+                    remove("floating_position_landscape_y")
+                    remove(FreeformView.REMEMBER_X)
+                    remove(FreeformView.REMEMBER_Y)
+                    remove(FreeformView.REMEMBER_LAND_X)
+                    remove(FreeformView.REMEMBER_LAND_Y)
+                    remove(FreeformView.REMEMBER_HEIGHT)
+                    remove(FreeformView.REMEMBER_LAND_HEIGHT)
                     apply()
                 }
                 Snackbar.make(requireView(), getString(R.string.reset_success), Snackbar.LENGTH_SHORT).show()
@@ -194,9 +198,11 @@ class SettingFragment : PreferenceFragmentCompat(), Preference.OnPreferenceClick
 
     override fun onResume() {
         super.onResume()
-        if (PermissionUtils.isAccessibilitySettingsOn(requireContext())) {
-            findPreference<IntegerSimpleMenuPreference>(SERVICE_TYPE)!!.setValueIndex(0)
-        }
+        // Reflect the saved mode instead of overriding foreground mode merely
+        // because accessibility happens to remain enabled on the device.
+        val serviceType = sp.getInt(SERVICE_TYPE, KeepAliveService.SERVICE_TYPE)
+        findPreference<IntegerSimpleMenuPreference>(SERVICE_TYPE)
+            ?.setValueIndex(if (serviceType == ForegroundService.SERVICE_TYPE) 1 else 0)
     }
 
     companion object {
@@ -206,6 +212,7 @@ class SettingFragment : PreferenceFragmentCompat(), Preference.OnPreferenceClick
         private const val NOTIFY_FREEFORM = "notify_freeform"
         private const val AUTO_MINIMIZE_ON_CALL = "auto_minimize_on_call"
         private const val RESET_OVERLAY_SETTING = "reset_overlay_setting"
+        private const val RESET_ALL_WINDOWS = "reset_all_windows"
         private const val SERVICE_TYPE = "service_type"
         private const val FREEFORM_SCALE = "freeform_scale"
     }

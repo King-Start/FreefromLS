@@ -5,7 +5,7 @@ This project uses `Mi-FreeFormn-flyme` as the base. The other three uploaded pro
 ## Merged feature areas
 
 - Flyme-style freeform UI, Shizuku/Sui activation, accessibility/foreground-service modes, notification launching, QS tile, and sidebar from the base project.
-- Sidebar, QS tile, notification actions, and the in-app app picker remain the supported launch paths. The launcher/Xposed recent-task hook was removed from this Shizuku-only build.
+- Sidebar, QS tile, notification actions, the in-app app picker, the reset-all-windows tile, and the explicit package/activity launch API remain the supported launch paths. The launcher/Xposed recent-task hook was removed from this Shizuku-only build.
 - Multiple-window limit with per-user duplicate detection, safer virtual-display cleanup, and secure virtual-display option.
 - Shizuku-side Android 8–15 compatibility hardening and defensive task/display handling. System-wide Xposed hooks are intentionally not included.
 - Safer input injection, pinch resizing, swipe home/forward on pre-Q, phone/screen receiver registration on Android 13+, and idempotent cleanup.
@@ -24,3 +24,6 @@ This project uses `Mi-FreeFormn-flyme` as the base. The other three uploaded pro
 3. Validate DPI input and protect input-event arrays/injection from null or invalid state.
 4. Add Android 13+ dynamic receiver flags and safe receiver unregistration.
 5. Add an optional `secure_virtual_display` setting and clamp the maximum-window setting to 1–10.
+6. Fix settings behavior: persist remembered window size across service restarts, apply dimming/opacity changes safely, clamp invalid preference values, make reset actually clear saved overlay state, keep the service-mode selector consistent, and fail safely when no accelerometer exists.
+7. Add a Shizuku-compatible explicit package/activity launch API and a reset-all-windows Settings action plus Quick Settings tile; validate API targets before creating a virtual display.
+8. Remove duplicate virtual-display release, clean destroyed view references, and release virtual displays when freeform initialization fails.

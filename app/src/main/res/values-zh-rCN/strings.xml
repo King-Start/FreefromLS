@@ -96,12 +96,16 @@
     <string name="service_type_title">保活服务类型</string>
     <string name="service_type_summary">默认为无障碍。如果无障碍在你的设备上有问题，可以选择前台通知。切换到前台通知时，请确保无障碍处于关闭状态。如果无障碍在你的设备上运行正常，请不要选择前台通知</string>
     <string name="preference_reset_overlay_setting">重置叠加层位置与大小</string>
+    <string name="reset_all_windows">重置所有小窗</string>
+    <string name="reset_all_windows_summary">关闭当前所有小窗</string>
     <string name="preference_reset_overlay_setting_summary">重置包括记录的小窗位置和大小、侧边栏的位置。可用于以上两者跳出屏外或尺寸异常而无法控制的问题</string>
     <string name="compatible_title">兼容模式启动小窗（实验性）</string>
     <string name="compatible_summary">使用兼容模式启动小窗，该模式可以解决小窗内软件通知、全屏后等界面尺寸异常的问题。兼容模式小窗界面缩放比例下一版本支持。</string>
 
     <string name="category_freeform">小窗设置</string>
     <string name="setting_freeform_dpi_title">小窗内界面缩放</string>
+    <string name="secure_virtual_display_title">安全虚拟显示屏</string>
+    <string name="secure_virtual_display_summary">防止小窗内容出现在截图和屏幕录制中</string>
     <string name="remember_position_title">记住悬浮小窗位置</string>
     <string name="remember_position_summary">记住上次悬浮时的位置</string>
     <string name="use_sui_refuse_to_fullscreen_title">使用Shizuku/Sui阻止应用跳出小窗到全屏(实验性)</string>

@@ -56,6 +56,7 @@ class FreeformService : Service(), ScreenListener.ScreenStateListener {
 
         when (intent.action) {
             ACTION_START_INTENT -> {
+                pruneDestroyedViews()
                 val config = FreeformConfig()
                 val userId = intent.getIntExtra(Intent.EXTRA_USER, 0)
                 config.userId = if (userId < 0) Refine.unsafeCast<ContextHidden>(this).userId else userId
@@ -108,10 +109,19 @@ class FreeformService : Service(), ScreenListener.ScreenStateListener {
                     ).show()
                     return START_NOT_STICKY
                 }
-                val freeformView = FreeformView(config, this, virtualDisplay, mScreenListener)
-                freeformView.initSystemService()
-                freeformView.initConfig()
-                freeformView.initView()
+                val freeformView: FreeformView
+                try {
+                    freeformView = FreeformView(config, this, virtualDisplay, mScreenListener)
+                    freeformView.initSystemService()
+                    freeformView.initConfig()
+                    freeformView.initView()
+                } catch (error: Throwable) {
+                    // Do not leak a display when hidden APIs or a ROM-specific
+                    // view initialization fails.
+                    runCatching { virtualDisplay.release() }
+                    android.util.Log.e("Mi-FreeformService", "Unable to initialize freeform view", error)
+                    return START_NOT_STICKY
+                }
 
                 val parcelable: Parcelable? = config.intent
                 val componentName: ComponentName? = config.componentName
@@ -150,8 +160,10 @@ class FreeformService : Service(), ScreenListener.ScreenStateListener {
                 }
 
                 if (result < 0) {
+                    // FreeformView.destroy() already releases the surface and
+                    // VirtualDisplay. Releasing it a second time can crash on
+                    // some Android releases.
                     freeformView.destroy()
-                    virtualDisplay.release()
                     return START_NOT_STICKY
                 }
 
@@ -186,11 +198,21 @@ class FreeformService : Service(), ScreenListener.ScreenStateListener {
             ACTION_DESTROY_FREEFORM -> {
                 mFreeformViews.lastOrNull { !it.isDestroy }?.destroy()
             }
+            ACTION_DESTROY_ALL_FREEFORM -> {
+                mFreeformViews.toList().forEach { view ->
+                    runCatching { view.destroy() }
+                }
+                mFreeformViews.clear()
+            }
             else -> return START_NOT_STICKY
         }
 
-        mFreeformViews.removeAll { it.isDestroy }
+        pruneDestroyedViews()
         return START_STICKY
+    }
+
+    private fun pruneDestroyedViews() {
+        mFreeformViews.removeAll { it.isDestroy }
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
@@ -209,7 +231,7 @@ class FreeformService : Service(), ScreenListener.ScreenStateListener {
     override fun onScreenOn() {}
 
     override fun onScreenOff() {
-        mFreeformViews.removeAll { it.isDestroy }
+        pruneDestroyedViews()
         // Hanya stop kalau setting auto_close_screen_off aktif
         // Kalau tidak, biarkan window tetap jalan di background
         if (sp.getBoolean("auto_close_screen_off", false)) {
@@ -226,6 +248,9 @@ class FreeformService : Service(), ScreenListener.ScreenStateListener {
         const val ACTION_START_INTENT = "com.sunshine.freeform.action.start.intent"
         const val ACTION_CALL_INTENT = "com.sunshine.freeform.action.call.intent"
         const val ACTION_DESTROY_FREEFORM = "com.sunshine.freeform.action.destroy.freeform"
+        const val ACTION_DESTROY_ALL_FREEFORM = "com.sunshine.freeform.action.destroy.all.freeform"
+        const val ACTION_START_FREEFORM_API = "com.sunshine.freeform.action.START_FREEFORM"
+        const val EXTRA_USER_ID = "com.sunshine.freeform.extra.USER_ID"
         const val EXTRA_DISPLAY_ID = "com.sunshine.freeform.action.intent.display.id"
         const val PREF_MAX_WINDOWS = "max_freeform_windows"
         const val MIN_MAX_WINDOWS = 1

@@ -57,11 +57,15 @@
     <string name="switch_hide_recent">Hide from recent tasks</string>
     <string name="switch_hide_recent_summary">Hide from multitasking in Mi-Freeform. Cross out the Mi-Freeform and then re-enter to take effect</string>
     <string name="preference_reset_overlay_setting">Reset overlay position and size</string>
+    <string name="reset_all_windows">Reset all windows</string>
+    <string name="reset_all_windows_summary">Close every active freeform window</string>
     <string name="preference_reset_overlay_setting_summary">Reset the position and size of the recorded freeform and sidebar. It can be used for the problems that the above two run out of the screen and cannot be controlled or the record freeform size not normal</string>
     <string name="compatible_title">Compatibility mode startup freeform (experimental)</string>
     <string name="compatible_summary">Use compatibility mode to start the freeform, this mode can solve the problem of abnormal interface size such as software notification in the freeform and full screen. Compatibility mode widget interface scaling is supported in the next version.</string>
     <string name="category_freeform">freeform settings</string>
     <string name="setting_freeform_dpi_title">Freeform interface scaling</string>
+    <string name="secure_virtual_display_title">Secure virtual display</string>
+    <string name="secure_virtual_display_summary">Prevent freeform content from appearing in screenshots and screen recordings</string>
     <string name="use_sui_refuse_to_fullscreen_title">Use Shizuku/Sui to prevent apps from popping out of freeform to full screen (experimental)</string>
     <string name="use_sui_refuse_to_fullscreen_summary">Currently supports Android 12+. Use Shizuku/Sui to try to prevent apps inside freeform from returning to full screen. This is device-dependent and may cause flickering or stutter on some ROMs.</string>
     <string name="category_floating">sidebar</string>

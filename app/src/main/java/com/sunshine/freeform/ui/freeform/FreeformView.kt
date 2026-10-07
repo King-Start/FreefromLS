@@ -254,8 +254,15 @@ class FreeformView(
     private val sharedPreferencesChangeListener =
         OnSharedPreferenceChangeListener { sharedPreferences, key ->
             when (key) {
+                "freeform_dimming_amount" -> {
+                    config.dimAmount = sharedPreferences.getInt(key, 20).coerceIn(0, 100) / 100f
+                    if (::backgroundView.isInitialized) {
+                        backgroundViewLayoutParams.dimAmount = config.dimAmount
+                        runCatching { windowManager.updateViewLayout(backgroundView, backgroundViewLayoutParams) }
+                    }
+                }
                 "freeform_float_view_size" -> {
-                    config.floatViewSize = (sharedPreferences.getInt(key, 20)) / 100.toFloat()
+                    config.floatViewSize = (sharedPreferences.getInt(key, 20).coerceIn(10, 50)) / 100.toFloat()
                     initFloatViewSize()
                     if (isFloating) {
                         if (isHidden) {
@@ -302,13 +309,13 @@ class FreeformView(
                     }
                 }
                 "window_opacity" -> {
-                    windowOpacity = sharedPreferences.getInt(key, 100)
+                    windowOpacity = sharedPreferences.getInt(key, 100).coerceIn(20, 100)
                     if (::binding.isInitialized) {
                         binding.freeformRoot.alpha = windowOpacity / 100f
                     }
                 }
                 "corner_radius" -> {
-                    cornerRadiusValue = sharedPreferences.getInt(key, 0).toFloat()
+                    cornerRadiusValue = sharedPreferences.getInt(key, 0).coerceIn(0, 50).toFloat()
                     if (::binding.isInitialized) {
                         if (cornerRadiusValue > 0) {
                             binding.cardRoot.radius = cornerRadiusValue
@@ -414,7 +421,7 @@ class FreeformView(
         initFloatViewSize()
 
         config.freeformDpi = FreeformHelper.getScreenDpi(context)
-        val tmpDpi = viewModel.getIntSp("freeform_scale", 50)
+        val tmpDpi = viewModel.getIntSp("freeform_scale", 50).coerceIn(50, 500)
         if (tmpDpi > 50) {
             config.freeformDpi = tmpDpi
         }
@@ -435,10 +442,10 @@ class FreeformView(
                 viewModel.getIntSp(REMEMBER_LAND_Y, -1)
             }
         }
-        config.floatViewSize = (viewModel.getIntSp("freeform_float_view_size", 20)) / 100.toFloat()
-        config.freeformSize = (viewModel.getIntSp("freeform_size", 75)) / 100.toFloat()
-        config.freeformSizeLand = (viewModel.getIntSp("freeform_size_land", 90)) / 100.toFloat()
-        config.dimAmount = (viewModel.getIntSp("freeform_dimming_amount", 20)) / 100.toFloat()
+        config.floatViewSize = viewModel.getIntSp("freeform_float_view_size", 20).coerceIn(10, 50) / 100f
+        config.freeformSize = viewModel.getIntSp("freeform_size", 75).coerceIn(10, 100) / 100f
+        config.freeformSizeLand = viewModel.getIntSp("freeform_size_land", 90).coerceIn(10, 100) / 100f
+        config.dimAmount = viewModel.getIntSp("freeform_dimming_amount", 20).coerceIn(0, 100) / 100f
 
         viewModel.registerOnSharedPreferenceChangeListener(sharedPreferencesChangeListener)
 
@@ -458,8 +465,8 @@ class FreeformView(
         enableShakeMinimize = viewModel.getBooleanSp("enable_shake_minimize", false)
 
         // Tampilan
-        windowOpacity = viewModel.getIntSp("window_opacity", 100)
-        cornerRadiusValue = viewModel.getIntSp("corner_radius", 0).toFloat()
+        windowOpacity = viewModel.getIntSp("window_opacity", 100).coerceIn(20, 100)
+        cornerRadiusValue = viewModel.getIntSp("corner_radius", 0).coerceIn(0, 50).toFloat()
 
         // Performa
         autoCloseScreenOff = viewModel.getBooleanSp("auto_close_screen_off", false)
@@ -533,15 +540,10 @@ class FreeformView(
         resetScale()
 
         // Apply tampilan awal
-        if (windowOpacity < 100) {
-            binding.freeformRoot.alpha = windowOpacity / 100f
-        }
-
+        binding.freeformRoot.alpha = windowOpacity / 100f
         if (cornerRadiusValue > 0) {
             binding.cardRoot.radius = cornerRadiusValue
         }
-
-        binding.freeformRoot.alpha = 1f
         binding.textureView.alpha = 0f
     }
 
@@ -741,10 +743,8 @@ class FreeformView(
         initOrientationChangedListener()
         initTextureViewListener()
 
-        // Apply ke view sebelum ditampilkan
-        if (windowOpacity < 100) {
-            binding.freeformRoot.alpha = windowOpacity / 100f
-        }
+        // Apply the saved appearance before the window is displayed.
+        binding.freeformRoot.alpha = windowOpacity / 100f
 
         if (cornerRadiusValue > 0) {
             binding.cardRoot.radius = cornerRadiusValue
@@ -993,6 +993,19 @@ class FreeformView(
         }
     }
 
+    private fun rememberedSizeHeight(): Int {
+        val key = if (FreeformHelper.screenIsPortrait(screenRotation)) REMEMBER_HEIGHT else REMEMBER_LAND_HEIGHT
+        return context.getSharedPreferences(MiFreeform.APP_SETTINGS_NAME, Context.MODE_PRIVATE)
+            .getInt(key, -1)
+    }
+
+    private fun rememberCurrentSize() {
+        if (!rememberFreeformSize || freeformHeight <= 0) return
+        val key = if (FreeformHelper.screenIsPortrait(screenRotation)) REMEMBER_HEIGHT else REMEMBER_LAND_HEIGHT
+        context.getSharedPreferences(MiFreeform.APP_SETTINGS_NAME, Context.MODE_PRIVATE)
+            .edit().putInt(key, freeformHeight).apply()
+    }
+
     private fun refreshFreeformSize() {
         freeformHeight = if (FreeformHelper.screenIsPortrait(screenRotation)) (rootWidth / config.widthHeightRatio * config.freeformSize).roundToInt() else (rootWidth * config.freeformSizeLand).roundToInt()
         freeformHeight += cardHeightMargin.roundToInt()
@@ -1005,6 +1018,17 @@ class FreeformView(
             if (!FreeformHelper.screenIsPortrait(screenRotation)) {
                 freeformWidth = (realScreenWidth / 2 + cardWidthMargin).roundToInt()
                 freeformHeight = (freeformWidth * config.widthHeightRatio).roundToInt()
+            }
+        }
+
+        // Restore the last resized dimensions across freeform service restarts.
+        if (rememberFreeformSize) {
+            val rememberedHeight = rememberedSizeHeight()
+            if (rememberedHeight > 0) {
+                val minHeight = (rootHeight * 0.6f).roundToInt()
+                val maxHeight = (rootHeight * 0.95f).roundToInt()
+                freeformHeight = rememberedHeight.coerceIn(minHeight, maxHeight)
+                freeformWidth = ((freeformHeight + cardWidthMargin) * config.widthHeightRatio).roundToInt()
             }
         }
 
@@ -1105,6 +1129,7 @@ class FreeformView(
                             savedWidthLandscape = freeformWidth
                             savedHeightLandscape = freeformHeight
                         }
+                        rememberCurrentSize()
                     }
                     isZoomOut = false
                 }
@@ -1126,6 +1151,7 @@ class FreeformView(
                             savedWidthLandscape = freeformWidth
                             savedHeightLandscape = freeformHeight
                         }
+                        rememberCurrentSize()
                     }
                     isZoomOut = false
                 }
@@ -1706,14 +1732,24 @@ class FreeformView(
     }
 
     private fun registerShakeListener() {
-        sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as android.hardware.SensorManager
-        accelerometer = sensorManager?.getDefaultSensor(android.hardware.Sensor.TYPE_ACCELEROMETER)
-        sensorManager?.registerListener(shakeListener, accelerometer, android.hardware.SensorManager.SENSOR_DELAY_NORMAL)
+        if (sensorManager != null) return
+        val manager = context.getSystemService(Context.SENSOR_SERVICE) as? android.hardware.SensorManager
+            ?: return
+        val sensor = manager.getDefaultSensor(android.hardware.Sensor.TYPE_ACCELEROMETER)
+            ?: return
+        sensorManager = manager
+        accelerometer = sensor
+        runCatching { manager.registerListener(shakeListener, sensor, android.hardware.SensorManager.SENSOR_DELAY_NORMAL) }
+            .onFailure {
+                sensorManager = null
+                accelerometer = null
+            }
     }
 
     private fun unregisterShakeListener() {
         runCatching { sensorManager?.unregisterListener(shakeListener) }
         sensorManager = null
+        accelerometer = null
     }
 
     // Phone call receiver untuk auto minimize
@@ -2465,6 +2501,7 @@ class FreeformView(
                             savedWidthLandscape = freeformWidth
                             savedHeightLandscape = freeformHeight
                         }
+                        rememberCurrentSize()
                     }
                 }
             }
@@ -2607,6 +2644,8 @@ class FreeformView(
                         Intent(context, FreeformService::class.java)
                             .setAction(FreeformService.ACTION_START_INTENT)
                             .putExtra(Intent.EXTRA_INTENT, config.intent)
+                            .putExtra(Intent.EXTRA_COMPONENT_NAME, config.componentName)
+                            .putExtra(Intent.EXTRA_USER, config.userId)
                     )
                     return
                 }

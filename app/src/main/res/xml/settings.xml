@@ -22,6 +22,11 @@
             app:title="@string/preference_reset_overlay_setting"
             android:summary="@string/preference_reset_overlay_setting_summary"
             app:iconSpaceReserved="false"/>
+        <Preference
+            android:key="reset_all_windows"
+            android:title="@string/reset_all_windows"
+            android:summary="@string/reset_all_windows_summary"
+            app:iconSpaceReserved="false"/>
     </PreferenceCategory>
 
     <PreferenceCategory
@@ -85,8 +90,8 @@
 
         <SwitchPreference
             android:key="secure_virtual_display"
-            android:title="Secure virtual display"
-            android:summary="Prevent freeform content from appearing in screenshots and screen recordings"
+            android:title="@string/secure_virtual_display_title"
+            android:summary="@string/secure_virtual_display_summary"
             app:defaultValue="false"
             app:iconSpaceReserved="false"/>
 
