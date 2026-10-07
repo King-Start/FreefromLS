@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.app.*
 import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
 import android.content.SharedPreferences
 import android.content.res.Configuration
 import android.graphics.BitmapFactory
@@ -20,7 +19,6 @@ import android.view.*
 import android.widget.Toast
 import com.sunshine.freeform.R
 import com.sunshine.freeform.app.MiFreeform
-import com.sunshine.freeform.broadcast.StartFreeformReceiver
 import com.sunshine.freeform.ui.floating.ChooseAppFloatingView
 import com.sunshine.freeform.ui.floating.FloatingActivity
 import com.sunshine.freeform.ui.freeform.FreeformService
@@ -77,10 +75,6 @@ class ForegroundService : Service(), SharedPreferences.OnSharedPreferenceChangeL
 
     private lateinit var displayManager: DisplayManager
 
-    private var startFreeformReceiver = StartFreeformReceiver()
-    //标记Receiver是否已注册，避免onDestroy中注销未注册的Receiver导致崩溃
-    private var receiverRegistered = false
-
     //获取默认屏幕
     private lateinit var defaultDisplay: Display
 
@@ -116,14 +110,6 @@ class ForegroundService : Service(), SharedPreferences.OnSharedPreferenceChangeL
         sp = getSharedPreferences(MiFreeform.APP_SETTINGS_NAME, Context.MODE_PRIVATE)
         sp.registerOnSharedPreferenceChangeListener(this)
         if (sp.getInt("service_type", KeepAliveService.SERVICE_TYPE) == SERVICE_TYPE) {
-            val filter = IntentFilter("com.sunshine.freeform.start_freeform")
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
-                registerReceiver(startFreeformReceiver, filter, Context.RECEIVER_EXPORTED)
-            } else {
-                registerReceiver(startFreeformReceiver, filter)
-            }
-            receiverRegistered = true
-
             //q221208.1 修复屏幕旋转后侧边栏不贴边的问题
             iWindowManager = IWindowManager.Stub.asInterface(
                 ShizukuBinderWrapper(
@@ -224,11 +210,6 @@ class ForegroundService : Service(), SharedPreferences.OnSharedPreferenceChangeL
         if (isShowingFloating) removeFloating()
         if (::sp.isInitialized) {
             sp.unregisterOnSharedPreferenceChangeListener(this)
-        }
-
-        if (receiverRegistered) {
-            runCatching { unregisterReceiver(startFreeformReceiver) }
-            receiverRegistered = false
         }
 
         if (::iWindowManager.isInitialized && ::rotationWatcher.isInitialized) {

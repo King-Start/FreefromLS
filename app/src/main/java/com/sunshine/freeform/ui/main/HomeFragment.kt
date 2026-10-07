@@ -1,7 +1,5 @@
 package com.sunshine.freeform.ui.main
 
-import android.app.IActivityTaskManager
-import android.app.TaskStackListener
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
@@ -22,7 +20,6 @@ import com.google.android.material.snackbar.Snackbar
 import com.sunshine.freeform.R
 import com.sunshine.freeform.app.MiFreeform
 import com.sunshine.freeform.databinding.FragmentHomeBinding
-import com.sunshine.freeform.hook.utils.HookTest
 import com.sunshine.freeform.service.KeepAliveService
 import com.sunshine.freeform.ui.guide.GuideActivity
 import com.sunshine.freeform.utils.PermissionUtils
@@ -57,13 +54,11 @@ class HomeFragment : Fragment(), View.OnClickListener {
 
         sp = requireContext().getSharedPreferences(MiFreeform.APP_SETTINGS_NAME, Context.MODE_PRIVATE)
         checkShizukuPermission()
-        checkXposedPermission()
         checkAccessibilityPermission()
         accessibilityRFAR = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
             checkAccessibilityPermission()
         }
 
-        binding.materialCardViewXposedInfo.setOnClickListener(this)
         binding.materialCardViewShizukuInfo.setOnClickListener(this)
         binding.materialCardViewAccessibilityInfo.setOnClickListener(this)
         binding.buttonGuide.setOnClickListener(this)
@@ -111,16 +106,6 @@ class HomeFragment : Fragment(), View.OnClickListener {
         return result
     }
 
-    private fun checkXposedPermission() {
-        val isActive = HookTest.checkXposed()
-        if (isActive) {
-            binding.infoXposedBg.setBackgroundColor(resources.getColor(R.color.success_color))
-            binding.imageViewXposedService.setImageDrawable(AppCompatResources.getDrawable(requireContext(), R.drawable.ic_done))
-            binding.textViewXposedServiceInfo.text = getString(R.string.xposed_start_short)
-            binding.textViewXposedServiceInfo.requestFocus()
-        }
-    }
-
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
@@ -128,17 +113,6 @@ class HomeFragment : Fragment(), View.OnClickListener {
 
     override fun onClick(v: View) {
         when(v.id) {
-            R.id.materialCardView_xposed_info -> {
-                if (HookTest.checkXposed()) {
-                    Snackbar.make(binding.root, getString(R.string.xposed_start), Snackbar.LENGTH_SHORT).show()
-                } else {
-                    MaterialAlertDialogBuilder(requireContext()).apply {
-                        setTitle(getString(R.string.warn))
-                        setMessage(getString(R.string.try_to_init_xposed))
-                        create().show()
-                    }
-                }
-            }
             R.id.materialCardView_shizuku_info -> {
                 MiFreeform.me?.initShizuku()
                 if (checkShizukuPermission()) {

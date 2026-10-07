@@ -12,54 +12,6 @@
         android:padding="16dp">
 
         <com.google.android.material.card.MaterialCardView
-            android:id="@+id/materialCardView_xposed_info"
-            style="@style/FreeForm.CardViewStyle"
-            android:layout_width="0dp"
-            android:layout_height="@dimen/info_card_height"
-            android:layout_marginStart="8dp"
-            android:layout_marginEnd="8dp"
-            app:layout_constraintEnd_toStartOf="@+id/guideline4"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
-
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/info_xposed_bg"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="@color/warn_color">
-
-                <ImageView
-                    android:id="@+id/imageView_xposed_service"
-                    android:layout_width="@dimen/info_image_size"
-                    android:layout_height="@dimen/info_image_size"
-                    android:layout_marginStart="8dp"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:srcCompat="@drawable/ic_error_white" />
-
-                <com.sunshine.freeform.ui.view.MTextView
-                    android:id="@+id/textView_xposed_service_info"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
-                    android:layout_marginEnd="8dp"
-                    android:text="@string/xposed_no_start"
-                    android:textColor="@color/white"
-                    android:textSize="@dimen/info_text_size"
-                    android:textStyle="bold"
-                    android:ellipsize="marquee"
-                    android:singleLine="true"
-                    android:marqueeRepeatLimit="marquee_forever"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toEndOf="@+id/imageView_xposed_service"
-                    app:layout_constraintTop_toTopOf="parent" />
-
-            </androidx.constraintlayout.widget.ConstraintLayout>
-        </com.google.android.material.card.MaterialCardView>
-
-        <com.google.android.material.card.MaterialCardView
             android:id="@+id/materialCardView_shizuku_info"
             style="@style/FreeForm.CardViewStyle"
             android:layout_width="0dp"
@@ -67,7 +19,7 @@
             android:layout_marginStart="8dp"
             android:layout_marginEnd="8dp"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/materialCardView_xposed_info"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
             <androidx.constraintlayout.widget.ConstraintLayout
@@ -235,13 +187,6 @@
                 </LinearLayout>
             </androidx.constraintlayout.widget.ConstraintLayout>
         </com.google.android.material.card.MaterialCardView>
-
-        <androidx.constraintlayout.widget.Guideline
-            android:id="@+id/guideline4"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            app:layout_constraintGuide_percent="0.5" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.core.widget.NestedScrollView>

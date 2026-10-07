@@ -23,11 +23,6 @@
 # 混淆会导致序列化失败
 -keep class com.sunshine.freeform.bean.MotionEventBean {*;}
 # 不混淆需要hook的类
--keep class com.sunshine.freeform.hook.HookFramework {*;}
--keep class com.sunshine.freeform.hook.HookMyself {*;}
--keep class com.sunshine.freeform.hook.HookSystemUI {*;}
--keep class com.sunshine.freeform.hook.utils.HookShellUtils {*;}
--keep class com.sunshine.freeform.hook.**{*;}
 
 #避免对AIDL混淆
 -keep class * implements android.os.IInterface {*;}

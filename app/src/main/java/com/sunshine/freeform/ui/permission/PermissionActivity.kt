@@ -19,7 +19,6 @@ import com.google.android.material.snackbar.Snackbar
 import com.sunshine.freeform.R
 import com.sunshine.freeform.app.MiFreeform
 import com.sunshine.freeform.databinding.ActivityPermissionBinding
-import com.sunshine.freeform.hook.utils.HookTest
 import com.sunshine.freeform.ui.splash.SplashActivity
 import com.sunshine.freeform.utils.PermissionUtils
 import rikka.sui.Sui
@@ -51,7 +50,6 @@ class PermissionActivity : AppCompatActivity(), View.OnClickListener {
         }
 
         binding.content.materialCardViewOverlayInfo.setOnClickListener(this)
-        binding.content.materialCardViewXposedInfo.setOnClickListener(this)
         binding.content.materialCardViewAccessibilityInfo.setOnClickListener(this)
         binding.content.materialCardViewShizukuInfo.setOnClickListener(this)
         binding.content.materialCardViewNotificationInfo.setOnClickListener(this)
@@ -72,7 +70,6 @@ class PermissionActivity : AppCompatActivity(), View.OnClickListener {
     }
 
     private fun checkPermission(): Boolean {
-        checkXposedPermission()
         checkNotificationPermission()
         checkKeepAliveService()
 
@@ -124,16 +121,6 @@ class PermissionActivity : AppCompatActivity(), View.OnClickListener {
         return result
     }
 
-    private fun checkXposedPermission() {
-        val isActive = HookTest.checkXposed()
-        if (isActive) {
-            binding.content.xposedInfoBg.setBackgroundColor(getColor(R.color.success_color))
-            binding.content.imageViewXposedService.setImageDrawable(AppCompatResources.getDrawable(this, R.drawable.ic_done))
-            binding.content.textViewServiceXposedInfo.text = getString(R.string.xposed_start)
-            binding.content.textViewServiceXposedInfo.requestFocus()
-        }
-    }
-
     private fun checkNotificationPermission() {
         val isActive = PermissionUtils.checkNotificationListenerPermission(this)
         if (isActive) {
@@ -151,15 +138,6 @@ class PermissionActivity : AppCompatActivity(), View.OnClickListener {
 
     override fun onClick(v: View) {
         when(v.id) {
-            R.id.materialCardView_xposed_info -> {
-                MaterialAlertDialogBuilder(this).apply {
-                    setTitle(getString(R.string.warn))
-                    setMessage(getString(R.string.xposed_permission_intro))
-                    setPositiveButton(getString(R.string.done)) {_, _ ->}
-                    setCancelable(false)
-                    create().show()
-                }
-            }
             R.id.materialCardView_shizuku_info -> {
                 MiFreeform.me?.initShizuku()
                 MiFreeform.me?.isRunning?.observe(this) {

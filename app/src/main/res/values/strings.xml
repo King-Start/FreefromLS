@@ -4,7 +4,6 @@
     <string name="warn">Warn</string>
     <string name="done">Done</string>
     <string name="cancel">Cancel</string>
-    <string name="xposed_description">An Xposed module that lets apps run in freeform mode</string>
     <string name="mi_freeform_not_support">Mi-Freeform only supports Android 10 and above</string>
     <string name="privacy_title">Privacy Policy</string>
     <string name="privacy_message">开发者名称：KindBrave\n\n版本生效日期：2022/8/31\n\n隐私政策版本：1\n\n欢迎你使用米窗，米窗非常重视用户的隐私，米窗本体不会收集、存储、上传任何用户信息；但是米窗使用了Bugly，Bugly使用过程中可能会收集用户信息，Bugly隐私政策请见下文中关于Bugly的描述。\n\n请仔细阅读并理解以下内容，如果你不同意米窗的隐私政策或者对米窗的隐私政策有疑问，请不要使用米窗。\n\n1.米窗本体\n为了保证米窗的正常运行，米窗需要申请以下可能涉及隐私的权限：\n\t1)无障碍权限\n\t\t无障碍权限用于侧边栏的展示等功能，主要利用其高保活能力特性，米窗没有使用无障碍权限对系统、用户进行任何监控。\n\t2)通知使用权限\n\t\t通知使用权是可选权限，即你可以根据自己的情况选择授权或者不授权。通知使用权用户接管通知以对通知添加“小窗打开”功能，米窗虽然获取到了通知内容，但是没有对其进行任何分析、存储、上传。\n\n2.Bugly\nBugly是腾讯旗下一个Bug收集的库，米窗使用Bugly仅用于收集Bug。\n其中，Bugly会收集设备的一些信息，包括Andorid版本号、CPU架构等；会使用互联网权限上传崩溃日志。\n更详细的Bugly隐私策略，请阅读《Bugly SDK个人信息保护规则》，网址：https://privacy.qq.com/document/preview/fc748b3d96224fdb825ea79e132c1a56</string>
@@ -25,15 +24,13 @@
     <string name="add_telegram">Telegram exchange group</string>
     <string name="open_source">Github</string>
     <string name="try_to_init_shizuku">Trying to activate Shizuku service…</string>
-    <string name="try_to_init_xposed">Having Xposed does not help Mi-Freeform to open freeform, but Mi-Freeform can prevent the application from jumping out of the freeform to full screen after having Xposed. To use Xposed, you need to go to the Xposed management application (such as Lsposed) to check the \"system framework\" for the Mi-Freeform and restart the device</string>
     <string name="sui_service_description">You can already experience Mi-Freeform service</string>
-    <string name="no_service_description">Neither Xposed nor Sui/Shizuku services start</string>
+    <string name="no_service_description">Shizuku/Sui service is not running</string>
     <string name="start_market_fail">Failed to open app store</string>
     <string name="start_coolapk_fail">Failed to open Coolapk</string>
     <string name="start_qq_fail">Failed to open QQ</string>
     <string name="sui_start_short">Sui activated</string>
     <string name="shizuku_start_short">Shizuku is active</string>
-    <string name="xposed_start_short">Xposed exists</string>
     <string name="accessibility_desc">Mi-Freeform keep alive service. This service can ensure the background survival of Mi-Freeform. Mi-Freeform does not collect any information through this service.</string>
     <string name="request_overlay_permission_fail">Unable to jump to the settings interface, please manually go to the settings to enable the \"display on top of other application interfaces\" permission of the Mi-Freeform</string>
     <string name="request_overlay_permission">Please select the Mi-Freeform to enable the permission of \"display in the upper layer of other application interface\"</string>
@@ -42,9 +39,7 @@
     <string name="label_notification_apps">Take over notification app selection</string>
     <string name="all_apps">All apps</string>
     <string name="edit_apps">edit</string>
-    <string name="xposed_no_start">(Optional) Xposed not activated</string>
-    <string name="xposed_start">Xposed exists, please check the system framework and restart</string>
-    <string name="permission_info">In order to ensure the normal operation of the software, Mi-Freeform needs to apply for the following permissions. Among them, the Xposed permission can prevent the application in the freeform from jumping out to the full screen; the Shizuku/Sui permission is used to open core functions such as the freeform; the accessibility permission is used to ensure the survival of the Mi-Freeform; the overlay window permission is used to display the freeform interface; notification The usage rights are used to open the freeform of the notification app.</string>
+    <string name="permission_info">Mi-Freeform uses Shizuku/Sui for its core freeform operations. Accessibility keeps the service alive, overlay permission displays the window, and notification access allows notification apps to open in freeform.</string>
     <string name="shizuku_no_start">Shizuku/Sui</string>
     <string name="sui_start">Sui service is already running</string>
     <string name="shizuku_start">Shizuku service is already running</string>
@@ -56,7 +51,6 @@
     <string name="notification_start">Notify that usage rights have been authorized</string>
     <string name="label_permission">Access Request</string>
     <string name="no_permission">There are also necessary permissions without authorization</string>
-    <string name="xposed_permission_intro">To enable the Xposed function, you need to go to the Xposed manager (such as Lsposed), check the system framework and restart. Please note that even if the Xposed function is enabled here, there is still a possibility of injection failure. For details, please refer to the log with the [Mi-Freeform] tag in Xposed.</string>
     <string name="next_step">Next step</string>
     <string name="label_setting">Settings</string>
     <string name="category_base">basic settings</string>
@@ -69,7 +63,7 @@
     <string name="category_freeform">freeform settings</string>
     <string name="setting_freeform_dpi_title">Freeform interface scaling</string>
     <string name="use_sui_refuse_to_fullscreen_title">Use Shizuku/Sui to prevent apps from popping out of freeform to full screen (experimental)</string>
-    <string name="use_sui_refuse_to_fullscreen_summary">Currently only supports Android 12+. This feature is recommended to be enabled only when there is no Xposed or Xposed blocking fails. Try using Shizuku/Sui to prevent apps inside the freeform from popping out of the freeform to full screen. This function is still under testing, and there is no guarantee that the blocking will be successful, and it will cause problems such as screen flickering, freezing, etc.</string>
+    <string name="use_sui_refuse_to_fullscreen_summary">Currently supports Android 12+. Use Shizuku/Sui to try to prevent apps inside freeform from returning to full screen. This is device-dependent and may cause flickering or stutter on some ROMs.</string>
     <string name="category_floating">sidebar</string>
     <string name="switch_floating">Global sidebar</string>
     <string name="switch_floating_summary">Open freeform apps via sidebar</string>
@@ -95,7 +89,7 @@
     <string name="welcome">Welcome to Use Mi-Freeform</string>
     <string name="guide_a">Through the following tutorials, you will get started with Mi-Freefrom faster</string>
     <string name="button_step_a">1. Preparation before using the Mi-Freeform</string>
-    <string name="guide_a_text">\t\t<font color="red"><b>Special reminder: Mi-Freeform cannot run in Vulkan mode, if you have turned on similar options (such as Kaleidoscope ROM-Settings-System-Lab \"Use Vulkan for HWUI Rendering\"), please turn off this option, forcibly stop the Mi-Freeform and run again, otherwise it will crash! Please note that switching the Vulkan option may cause the device to fail to start. Please do not try on the main device!</b></font>\n\t\tBefore using the meter window, you must be introduced to the use of the meter window. <b>Mi Window requires Xposed and Shizuku/Sui</b>, if you don\'t know the above tools, please check the relevant information by yourself, <b>use Mi-Freeform after installation on the device</b>. \n\t\tMi-Freeform currently supports a variety of startup methods, including: 1. Sidebar, 2. Quick tile 3. Reserved activities, etc. In the future, Mi-Freeform will support more startup methods.</string>
+    <string name="guide_a_text">\t\t<font color="red"><b>Special reminder: Mi-Freeform cannot run in Vulkan mode, if you have turned on similar options (such as Kaleidoscope ROM-Settings-System-Lab \"Use Vulkan for HWUI Rendering\"), please turn off this option, forcibly stop the Mi-Freeform and run again, otherwise it will crash! Please note that switching the Vulkan option may cause the device to fail to start. Please do not try on the main device!</b></font>\n\t\tBefore using the meter window, you must be introduced to the use of the meter window. <b>Mi-Freeform requires Shizuku/Sui only</b>, if you don\'t know the above tools, please check the relevant information by yourself, <b>use Mi-Freeform after installation on the device</b>. \n\t\tMi-Freeform currently supports a variety of startup methods, including: 1. Sidebar, 2. Quick tile 3. Reserved activities, etc. In the future, Mi-Freeform will support more startup methods.</string>
     <string name="button_step_b">2. Understand the control method of Mi-Freeform</string>
     <string name="guide_move">How does the freeform move? How to hang? Drag the indicated button to the four corners of the screen to try it. To resume from the suspended state, just click the freeform interface.</string>
     <string name="guide_back">Very good! So how to return to the previous interface in the freeform? Click on the indicated button</string>
@@ -150,8 +144,6 @@
     <string name="to_read_step_a">To read</string>
     <string name="start_step_b">Start the tutorial</string>
     <string name="open_api">Open API</string>
-    <string name="preference_start_by_recent_view_summary">How to open Mi-Freeform in multi task interface? After checking the desktop in xposed manager, long press the application icon on the multitasking interface. This function only supports launcher3 desktop</string>
-    <string name="preference_start_by_recent_view_title">Start in RecentView</string>
     <string name="input_freeform_dpi">Range: 50 ~ 500</string>
     <string name="freeform_dpi_dialog_title">Enter scale value</string>
     <string name="to_default">To default</string>

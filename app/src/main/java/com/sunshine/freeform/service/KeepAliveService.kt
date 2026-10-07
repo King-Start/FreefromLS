@@ -8,7 +8,6 @@ import android.content.res.Configuration
 import android.graphics.PixelFormat
 import android.hardware.display.DisplayManager
 import android.net.Uri
-import android.os.Build
 import android.os.IBinder
 import android.provider.Settings
 import android.util.Log
@@ -19,7 +18,6 @@ import androidx.annotation.RequiresApi
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.sunshine.freeform.R
 import com.sunshine.freeform.app.MiFreeform
-import com.sunshine.freeform.broadcast.StartFreeformReceiver
 import com.sunshine.freeform.ui.floating.ChooseAppFloatingView
 import com.sunshine.freeform.ui.freeform.FreeformConfig
 import com.sunshine.freeform.ui.freeform.FreeformService
@@ -82,9 +80,6 @@ class KeepAliveService : AccessibilityService(), SharedPreferences.OnSharedPrefe
     //获取默认屏幕
     private lateinit var defaultDisplay: Display
 
-    private var startFreeformReceiver = StartFreeformReceiver()
-    private var receiverRegistered = false
-
     //屏幕监听
     private val displayListener = object : DisplayManager.DisplayListener {
         override fun onDisplayAdded(displayId: Int) {
@@ -120,7 +115,6 @@ class KeepAliveService : AccessibilityService(), SharedPreferences.OnSharedPrefe
         }
         runCatching { stopService(Intent(this, ForegroundService::class.java)) }
 
-        registerStartFreeformReceiver()
         initRotationWatcher()
 
         displayManager = getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
@@ -139,17 +133,6 @@ class KeepAliveService : AccessibilityService(), SharedPreferences.OnSharedPrefe
         initConfig()
         chooseAppFloatingView = ChooseAppFloatingView(this, config.positionX, this)
         runCatching { startService(Intent(this, FreeformService::class.java)) }
-    }
-
-    private fun registerStartFreeformReceiver() {
-        if (receiverRegistered) return
-        val filter = IntentFilter("com.sunshine.freeform.start_freeform")
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            registerReceiver(startFreeformReceiver, filter, Context.RECEIVER_EXPORTED)
-        } else {
-            registerReceiver(startFreeformReceiver, filter)
-        }
-        receiverRegistered = true
     }
 
     private fun initRotationWatcher() {
@@ -215,10 +198,6 @@ class KeepAliveService : AccessibilityService(), SharedPreferences.OnSharedPrefe
             if (isShowingFloating) removeFloating()
             if (::sp.isInitialized) {
                 sp.unregisterOnSharedPreferenceChangeListener(this)
-            }
-            if (receiverRegistered) {
-                unregisterReceiver(startFreeformReceiver)
-                receiverRegistered = false
             }
             if (::iWindowManager.isInitialized && ::rotationWatcher.isInitialized) {
                 iWindowManager.removeRotationWatcher(rotationWatcher)

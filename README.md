@@ -6,7 +6,7 @@
 
 Mi-FreeForm is an APP that is activated through Shizuku/Sui and can display most apps in the form of freeform.
 
-This merged build keeps the Flyme-style base and incorporates defensive launcher/task-display handling and stability fixes from the three supplied reference projects. See [MERGE_NOTES.md](MERGE_NOTES.md) for the exact scope and validation notes.
+This Shizuku-only build keeps the Flyme-style base and incorporates Shizuku-side stability fixes from the three supplied reference projects. It does not require LSPosed/Xposed. See [MERGE_NOTES.md](MERGE_NOTES.md) for the exact scope and validation notes.
 
 Current support:
 - Open the favorites app in small window mode through the global sidebar
@@ -28,8 +28,6 @@ Current support:
 
 [TinyPinyin](https://github.com/promeG/TinyPinyin)
 
-[Xposed](https://github.com/rovo89/Xposed)
-
 ## License
 ```
 Copyright (C) 2021-2022  sunshine0523
@@ -45,6 +43,3 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 ```
-# FreefromLS
-# FreefromLS
-# FreefromLS
