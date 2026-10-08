@@ -24,6 +24,6 @@ This project uses `Mi-FreeFormn-flyme` as the base. The other three uploaded pro
 3. Validate DPI input and protect input-event arrays/injection from null or invalid state.
 4. Add Android 13+ dynamic receiver flags and safe receiver unregistration.
 5. Add an optional `secure_virtual_display` setting and clamp the maximum-window setting to 1–10.
-6. Fix settings behavior: persist remembered window size across service restarts, apply dimming/opacity changes safely, clamp invalid preference values, make reset actually clear saved overlay state, keep the service-mode selector consistent, and fail safely when no accelerometer exists.
-7. Add a Shizuku-compatible explicit package/activity launch API and a reset-all-windows Settings action plus Quick Settings tile; validate API targets before creating a virtual display.
+6. Fix settings behavior: persist remembered window size across service restarts, apply dimming/DPI/size/opacity changes safely, clamp invalid preference values, make reset actually clear saved overlay state, keep the service-mode selector consistent, and fail safely when no accelerometer exists.
+7. Add a Shizuku-compatible explicit package/activity launch API, a reset-all-windows Settings action plus Quick Settings tile, and an animation-speed setting; validate API targets before creating a virtual display.
 8. Remove duplicate virtual-display release, clean destroyed view references, and release virtual displays when freeform initialization fails.

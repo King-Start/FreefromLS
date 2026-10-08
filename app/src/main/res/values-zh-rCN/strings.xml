@@ -219,4 +219,6 @@
     <string name="recent_open_by_freeform">使用米窗打开</string>
     <string name="show_top_bar_title">显示顶栏</string>
     <string name="show_top_bar_summary">长按拖动可移动窗口。点击左侧返回，点击右侧关闭窗口</string>
+    <string name="animation_speed_title">动画速度</string>
+    <string name="animation_speed_summary">数值越高，小窗动画越快</string>
 </resources>

@@ -39,6 +39,7 @@ YAMF dan reYAMF menggunakan `xposed_init`, `HookLauncher`, `HookSystem`, dan ser
 | Launch method move/start/hybrid | Cara memindahkan task atau memulai activity | Belum | Mode referensi bergantung pada task/launcher hook; build ini memakai jalur activity start melalui Shizuku yang lebih aman |
 | Rounded corner | Mengatur radius window | Ada | Setting `corner_radius`, nilai divalidasi |
 | Sidebar transparency | Mengatur transparansi sidebar | Ada | Setting `floating_alpha` |
+| Animation speed | Mengatur kecepatan animasi window/sidebar | Ditambahkan | Setting `animation_speed` 50–200%; memengaruhi durasi animasi utama |
 | Sidebar startup | Menyalakan sidebar saat boot | Sebagian ada | Boot receiver dan keep-alive service tetap dipertahankan; accessibility service tetap mengikuti lifecycle Android |
 | Auto-close task | Menutup window ketika task hilang | Ada | `TaskStackListener` menghancurkan view setelah task terakhir hilang |
 
@@ -95,11 +96,16 @@ Reset sebelumnya menulis angka `0` atau ukuran baru ke beberapa key. Ini dapat m
 
 Perbaikan: key posisi dan ukuran tersimpan sekarang dihapus saat reset.
 
-### 8. Dimming tidak langsung diterapkan
+### 8. Dimming, DPI, dan ukuran default tidak langsung diterapkan
 
-Slider `freeform_dimming_amount` hanya mengubah konfigurasi untuk window berikutnya.
+Slider `freeform_dimming_amount`, DPI, dan ukuran portrait/landscape sebelumnya terutama mengubah konfigurasi untuk window berikutnya. Reset DPI juga menulis nilai `0` walaupun slider memiliki batas minimum 50.
 
-Perbaikan: `backgroundViewLayoutParams.dimAmount` dan layout aktif diperbarui saat setting berubah.
+Perbaikan:
+
+- dimming aktif diperbarui pada window yang sedang tampil;
+- perubahan DPI langsung me-resize virtual display;
+- perubahan ukuran langsung memperbarui ukuran/display aktif;
+- reset DPI memakai nilai valid 50 sebagai mode default.
 
 ### 9. Opacity dapat tertimpa menjadi 100%
 

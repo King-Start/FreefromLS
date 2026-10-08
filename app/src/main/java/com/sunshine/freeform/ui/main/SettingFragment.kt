@@ -125,7 +125,7 @@ class SettingFragment : PreferenceFragmentCompat(), Preference.OnPreferenceClick
                     }
                     setNegativeButton(getString(R.string.cancel)) {_, _ ->}
                     setNeutralButton(getString(R.string.to_default)) { _, _ ->
-                        (preference as SeekBarPreference).value = 0
+                        (preference as SeekBarPreference).value = 50
                     }
                     create().show()
                 }

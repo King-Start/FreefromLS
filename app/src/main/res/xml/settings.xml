@@ -218,6 +218,16 @@
             app:defaultValue="true"
             app:iconSpaceReserved="false"/>
 
+        <SeekBarPreference
+            android:key="animation_speed"
+            android:title="@string/animation_speed_title"
+            android:summary="@string/animation_speed_summary"
+            app:defaultValue="100"
+            app:min="50"
+            android:max="200"
+            app:showSeekBarValue="true"
+            app:iconSpaceReserved="false"/>
+
     </PreferenceCategory>
 
     <PreferenceCategory

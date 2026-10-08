@@ -254,6 +254,28 @@ class FreeformView(
     private val sharedPreferencesChangeListener =
         OnSharedPreferenceChangeListener { sharedPreferences, key ->
             when (key) {
+                "freeform_scale" -> {
+                    val dpi = sharedPreferences.getInt(key, 50).coerceIn(50, 500)
+                    config.freeformDpi = if (dpi > 50) dpi else FreeformHelper.getScreenDpi(context)
+                    runCatching { resizeVirtualDisplay() }
+                }
+                "freeform_size", "freeform_size_land" -> {
+                    // A changed default size should take effect on the active
+                    // window instead of waiting for the next launch. Do not
+                    // let an older remembered size override the new default.
+                    val prefs = context.getSharedPreferences(MiFreeform.APP_SETTINGS_NAME, Context.MODE_PRIVATE)
+                    val currentKey = if (key == "freeform_size") REMEMBER_HEIGHT else REMEMBER_LAND_HEIGHT
+                    prefs.edit().remove(currentKey).apply()
+                    config.freeformSize = sharedPreferences.getInt("freeform_size", 75).coerceIn(10, 100) / 100f
+                    config.freeformSizeLand = sharedPreferences.getInt("freeform_size_land", 90).coerceIn(10, 100) / 100f
+                    if (::binding.isInitialized) {
+                        refreshFreeformSize()
+                        freeformScreenWidth = (freeformWidth - cardWidthMargin).roundToInt().coerceAtLeast(1)
+                        freeformScreenHeight = (freeformHeight - cardHeightMargin).roundToInt().coerceAtLeast(1)
+                        runCatching { resizeVirtualDisplay() }
+                        resetScale()
+                    }
+                }
                 "freeform_dimming_amount" -> {
                     config.dimAmount = sharedPreferences.getInt(key, 20).coerceIn(0, 100) / 100f
                     if (::backgroundView.isInitialized) {
@@ -303,7 +325,7 @@ class FreeformView(
                                     },
                                 moveViewAnim(windowCoordinate, lastFloatViewLocation)
                             )
-                            duration = 200
+                            duration = animationDuration(200L)
                             start()
                         }
                     }
@@ -547,6 +569,11 @@ class FreeformView(
         binding.textureView.alpha = 0f
     }
 
+    private fun animationDuration(baseMillis: Long): Long {
+        val speed = viewModel.getIntSp("animation_speed", 100).coerceIn(50, 200)
+        return (baseMillis * 100L / speed).coerceIn(50L, 2000L)
+    }
+
     private fun applyTopBarVisibility() {
         if (!::binding.isInitialized) return
         val show = viewModel.getBooleanSp("show_top_bar", true)
@@ -729,8 +756,8 @@ class FreeformView(
                     ++updateFrameCount
                     if (updateFrameCount > 2) {
                         binding.lottieView.cancelAnimation()
-                        binding.lottieView.animate().alpha(0f).setDuration(200).start()
-                        binding.textureView.animate().alpha(1f).setDuration(200).start()
+                        binding.lottieView.animate().alpha(0f).setDuration(animationDuration(200L)).start()
+                        binding.textureView.animate().alpha(1f).setDuration(animationDuration(200L)).start()
                         initFinish = true
                     }
                 }
@@ -1305,7 +1332,7 @@ class FreeformView(
                                     },
                                 )
                                 startDelay = 125
-                                duration = 600
+                                duration = animationDuration(600L)
                                 addListener(
                                     onStart = {
                                         backgroundView.visibility = View.GONE
@@ -1332,7 +1359,7 @@ class FreeformView(
                             binding.freeformRoot.scaleX = 1f
                         }
                     )
-                    duration = 400
+                    duration = animationDuration(400L)
                     start()
                 }
             } else if (mScaleY >= goFullScale) {
@@ -1359,7 +1386,7 @@ class FreeformView(
                             destroy()
                         }
                     )
-                    duration = 400
+                    duration = animationDuration(400L)
                     start()
                 }
             } else {
@@ -1369,7 +1396,7 @@ class FreeformView(
                         ObjectAnimator.ofFloat(binding.freeformRoot, View.SCALE_X, mScaleX, restoreScale[0]),
                         ObjectAnimator.ofFloat(binding.freeformRoot, View.SCALE_Y, mScaleY, restoreScale[1]),
                     )
-                    duration = 300
+                    duration = animationDuration(300L)
                     interpolator = OvershootInterpolator(1.5f)
                     start()
                 }
@@ -1394,7 +1421,7 @@ class FreeformView(
                     }
                 }
             )
-            duration = 600
+            duration = animationDuration(600L)
             interpolator = OvershootInterpolator(2f)
             start()
         }
@@ -1432,7 +1459,7 @@ class FreeformView(
                     intArrayOf(location[0], location[1])
                 )
             )
-            duration = 600
+            duration = animationDuration(600L)
             interpolator = OvershootInterpolator(2f)
             start()
         }
@@ -1543,7 +1570,7 @@ class FreeformView(
                                     isMoved = false
                                 }
                             )
-                            duration = 400
+                            duration = animationDuration(400L)
                             interpolator = OvershootInterpolator(2f)
                             start()
                         }
@@ -1621,14 +1648,14 @@ class FreeformView(
                             ),
                             moveViewAnim(windowCoordinate, center),
                         )
-                        duration = 400
+                        duration = animationDuration(400L)
                         startDelay = 150
                         start()
                     }
                 },
                 onEnd = { backgroundView.visibility = View.VISIBLE }
             )
-            duration = 400
+            duration = animationDuration(400L)
             start()
         }
 
@@ -1662,7 +1689,7 @@ class FreeformView(
                     if (goMiniView) floatViewToMiniView()
                 }
             )
-            duration = 400
+            duration = animationDuration(400L)
             interpolator = OvershootInterpolator(2f)
             start()
         }
@@ -1967,7 +1994,7 @@ class FreeformView(
         scope.launch(Dispatchers.Main) {
             binding.root.animate()
                 .alpha(0f)
-                .setDuration(150)
+                .setDuration(animationDuration(150L))
                 .withEndAction { destroy() }
                 .start()
         }
@@ -2089,7 +2116,7 @@ class FreeformView(
         }
         runCatching {
             windowManager.addView(iv, lp)
-            iv.animate().alpha(1f).setDuration(150).start()
+            iv.animate().alpha(1f).setDuration(animationDuration(150L)).start()
             swipeIndicatorView = iv
         }
     }
@@ -2111,7 +2138,7 @@ class FreeformView(
                 .alpha(0f)
                 .scaleX(if (triggered) 1.5f else 0.5f)
                 .scaleY(if (triggered) 1.5f else 0.5f)
-                .setDuration(200)
+                .setDuration(animationDuration(200L))
                 .withEndAction {
                     runCatching { windowManager.removeView(iv) }
                     swipeIndicatorView = null
@@ -2273,7 +2300,7 @@ class FreeformView(
             (realScreenWidth / 2) - (windowLayoutParams.width / 2) + screenPaddingX
         }
         ValueAnimator.ofInt(windowLayoutParams.x, targetX).apply {
-            duration = 200
+            duration = animationDuration(200L)
             interpolator = android.view.animation.DecelerateInterpolator()
             addUpdateListener {
                 runCatching {
