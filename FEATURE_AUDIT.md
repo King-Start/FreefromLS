@@ -10,6 +10,11 @@ Audit ini membandingkan source project gabungan dengan tiga arsip referensi:
 
 YAMF dan reYAMF menggunakan `xposed_init`, `HookLauncher`, `HookSystem`, dan service Xposed untuk membaca/mengubah launcher, recents, taskbar, serta task system. Jalur tersebut tidak dipindahkan karena build ini wajib memakai Shizuku/Sui saja. Shizuku digunakan untuk binder system service, virtual display, activity task manager, window manager, dan input manager.
 
+Build ini sekarang memiliki dua tingkat kemampuan:
+
+- **Dengan Shizuku/Sui:** virtual display, freeform window, task/display management, input injection, dan pembukaan multi-window.
+- **Tanpa Shizuku:** accessibility/overlay taskbar/sidebar tetap dapat menampilkan daftar aplikasi, membuka aplikasi secara normal fullscreen, menjalankan action notifikasi secara normal, dan memakai explicit launch API sebagai launcher biasa. Ini bukan freeform window sistem.
+
 ## Matriks fitur
 
 | Fitur referensi | Fungsi | Status build ini | Keputusan |
@@ -39,6 +44,7 @@ YAMF dan reYAMF menggunakan `xposed_init`, `HookLauncher`, `HookSystem`, dan ser
 | Launch method move/start/hybrid | Cara memindahkan task atau memulai activity | Belum | Mode referensi bergantung pada task/launcher hook; build ini memakai jalur activity start melalui Shizuku yang lebih aman |
 | Rounded corner | Mengatur radius window | Ada | Setting `corner_radius`, nilai divalidasi |
 | Sidebar transparency | Mengatur transparansi sidebar | Ada | Setting `floating_alpha` |
+| Standalone taskbar fallback | Membuka app dari sidebar tanpa Shizuku | Ditambahkan | App picker/sidebar dan notification API membuka aplikasi fullscreen normal |
 | Animation speed | Mengatur kecepatan animasi window/sidebar | Ditambahkan | Setting `animation_speed` 50–200%; memengaruhi durasi animasi utama |
 | Sidebar startup | Menyalakan sidebar saat boot | Sebagian ada | Boot receiver dan keep-alive service tetap dipertahankan; accessibility service tetap mengikuti lifecycle Android |
 | Auto-close task | Menutup window ketika task hilang | Ada | `TaskStackListener` menghancurkan view setelah task terakhir hilang |

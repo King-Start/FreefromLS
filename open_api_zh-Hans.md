@@ -50,6 +50,6 @@ val request = Intent("com.sunshine.freeform.action.START_FREEFORM").apply {
 context.sendBroadcast(request)
 ```
 
-这是显式的包名/Activity API，不会读取当前前台应用。YAMF/reYAMF 的当前应用启动行为依赖 Xposed 启动器 hook，因此没有加入本版本。
+这是显式的包名/Activity API。有 Shizuku 时会在小窗中打开目标应用；没有 Shizuku 时会像普通任务栏一样全屏打开目标应用。它不会读取当前前台应用。YAMF/reYAMF 的当前应用启动行为依赖 Xposed 启动器 hook，因此没有加入本版本。
 
 [English](open_api.md)

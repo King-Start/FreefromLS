@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.util.Log
 import com.sunshine.freeform.ui.freeform.FreeformService
+import com.sunshine.freeform.utils.ShizukuCapability
 
 /**
  * Public, explicit launch API. It replaces the old launcher/recents hook for
@@ -22,6 +23,17 @@ class StartFreeformApiReceiver : BroadcastReceiver() {
         }
         val component = target.component ?: return
         val userId = intent.getIntExtra(FreeformService.EXTRA_USER_ID, -1)
+
+        if (!ShizukuCapability.isAuthorized()) {
+            // The same API remains useful as a normal taskbar launcher when
+            // Shizuku is unavailable; only the freeform display is skipped.
+            runCatching {
+                context.startActivity(target.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+            }.onFailure {
+                Log.e(TAG, "Unable to launch standalone target", it)
+            }
+            return
+        }
 
         runCatching {
             context.startService(

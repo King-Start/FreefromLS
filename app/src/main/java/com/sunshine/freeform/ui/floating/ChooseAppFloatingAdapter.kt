@@ -24,6 +24,7 @@ import com.sunshine.freeform.ui.floating_apps_sort.FloatingAppsSortActivity
 import com.sunshine.freeform.ui.choose_apps.ChooseAppsActivity
 import com.sunshine.freeform.room.FreeFormAppsEntity
 import com.sunshine.freeform.ui.freeform.*
+import com.sunshine.freeform.utils.ShizukuCapability
 import java.lang.reflect.Method
 
 /**
@@ -109,17 +110,22 @@ class ChooseAppFloatingAdapter(
                         .into(holder.icon)
                     holder.appName.text = getLabel(appInfo, apps[position - 1].userId)
                     holder.click.setOnClickListener {
-                        context.startService(
-                            Intent(context, FreeformService::class.java)
-                                .setAction(FreeformService.ACTION_START_INTENT)
-                                .putExtra(Intent.EXTRA_USER, apps[position - 1].userId)
-                                .putExtra(Intent.EXTRA_INTENT,
-                                    Intent(Intent.ACTION_MAIN)
-                                        .setComponent(ComponentName(packageName, activityName))
-                                        .setPackage(packageName)
-                                        .addCategory(Intent.CATEGORY_LAUNCHER)
-                                )
-                        )
+                        val launchIntent = Intent(Intent.ACTION_MAIN)
+                            .setComponent(ComponentName(packageName, activityName))
+                            .setPackage(packageName)
+                            .addCategory(Intent.CATEGORY_LAUNCHER)
+                        if (ShizukuCapability.isAuthorized()) {
+                            context.startService(
+                                Intent(context, FreeformService::class.java)
+                                    .setAction(FreeformService.ACTION_START_INTENT)
+                                    .putExtra(Intent.EXTRA_USER, apps[position - 1].userId)
+                                    .putExtra(Intent.EXTRA_INTENT, launchIntent)
+                            )
+                        } else {
+                            // Standalone fallback: the sidebar remains a
+                            // normal taskbar and launches the app fullscreen.
+                            context.startActivity(launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+                        }
                         callback.onClick()
                     }
                     //长按进入排序界面

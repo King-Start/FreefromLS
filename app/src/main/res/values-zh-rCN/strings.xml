@@ -68,7 +68,7 @@
     <string name="edit_apps">编辑</string>
 
     <!--content_permission-->
-    <string name="permission_info">米窗使用Shizuku/Sui执行小窗核心操作；无障碍权限用于保持服务运行；悬浮窗权限用于显示小窗；通知使用权用于从通知打开应用小窗。</string>
+    <string name="permission_info">米窗使用Shizuku/Sui执行小窗核心操作；无障碍权限用于保持侧边栏/任务栏运行；悬浮窗权限用于显示任务栏。没有Shizuku时，侧边栏、应用选择器和通知操作仍可像普通任务栏一样全屏打开应用。</string>
     <string name="shizuku_no_start">点击授权Shizuku/Sui</string>
     <string name="sui_start">Sui服务已经运行</string>
     <string name="shizuku_start">Shizuku服务已经运行</string>

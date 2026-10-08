@@ -15,6 +15,7 @@ import com.sunshine.freeform.ui.freeform.FreeformConfig
 import com.sunshine.freeform.ui.freeform.FreeformHelper
 import com.sunshine.freeform.ui.freeform.FreeformService
 import com.sunshine.freeform.ui.freeform.FreeformView
+import com.sunshine.freeform.utils.ShizukuCapability
 import java.lang.reflect.Method
 
 /**
@@ -38,6 +39,14 @@ class NotificationIntentService : Service() {
 
     @SuppressLint("WrongConstant")
     private fun startFreeForm(targetPackage: String, targetUserId: Int, targetIntent: PendingIntent?) {
+        // Without Shizuku, notification actions still work as a normal
+        // fullscreen launch. Freeform display launch remains Shizuku-only.
+        if (!ShizukuCapability.isAuthorized()) {
+            runCatching { targetIntent?.send() }
+            stopSelf()
+            return
+        }
+
         //关闭通知栏
         collapseStatusBar()
         //点击后清除小窗

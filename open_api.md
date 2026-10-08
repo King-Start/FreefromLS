@@ -50,4 +50,4 @@ val request = Intent("com.sunshine.freeform.action.START_FREEFORM").apply {
 context.sendBroadcast(request)
 ```
 
-This is an explicit package/activity API. It does not inspect the current launcher task; that behavior in YAMF/reYAMF depended on Xposed launcher hooks and is intentionally not included.
+This is an explicit package/activity API. With Shizuku it opens the target in freeform; without Shizuku it launches the same target normally in fullscreen. It does not inspect the current launcher task; that behavior in YAMF/reYAMF depended on Xposed launcher hooks and is intentionally not included.

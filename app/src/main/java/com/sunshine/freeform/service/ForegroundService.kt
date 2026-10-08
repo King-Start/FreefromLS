@@ -110,44 +110,46 @@ class ForegroundService : Service(), SharedPreferences.OnSharedPreferenceChangeL
         sp = getSharedPreferences(MiFreeform.APP_SETTINGS_NAME, Context.MODE_PRIVATE)
         sp.registerOnSharedPreferenceChangeListener(this)
         if (sp.getInt("service_type", KeepAliveService.SERVICE_TYPE) == SERVICE_TYPE) {
-            //q221208.1 修复屏幕旋转后侧边栏不贴边的问题
-            iWindowManager = IWindowManager.Stub.asInterface(
-                ShizukuBinderWrapper(
-                    SystemServiceHelper.getSystemService("window"))
-            )
-            rotationWatcher = object : IRotationWatcher.Stub() {
-                override fun onRotationChanged(rotation: Int) {
-                    scope.launch(Dispatchers.Main) {
-                        displayRotation = rotation
+            // Rotation watching uses a Shizuku system binder when available,
+            // but the taskbar fallback must still work without Shizuku.
+            runCatching {
+                iWindowManager = IWindowManager.Stub.asInterface(
+                    ShizukuBinderWrapper(
+                        SystemServiceHelper.getSystemService("window"))
+                )
+                rotationWatcher = object : IRotationWatcher.Stub() {
+                    override fun onRotationChanged(rotation: Int) {
+                        scope.launch(Dispatchers.Main) {
+                            displayRotation = rotation
 
-                        //q220902.3 如果程序崩溃的话，那么resources.configuration.orientation获取到的方向是错误的，所以不应该用该方法
-                        val tempScreenRotation = if (displayRotation == Surface.ROTATION_0 || displayRotation == Surface.ROTATION_180) {
-                            Configuration.ORIENTATION_PORTRAIT
-                        } else {
-                            Configuration.ORIENTATION_LANDSCAPE
-                        }
-
-                        if (tempScreenRotation != screenRotation) {
-                            screenRotation = tempScreenRotation
-
-                            if (screenRotation == Configuration.ORIENTATION_PORTRAIT) {
-                                screenHeight = max(resources.displayMetrics.widthPixels, resources.displayMetrics.heightPixels)
-                                screenWidth = min(resources.displayMetrics.widthPixels, resources.displayMetrics.heightPixels)
+                            val tempScreenRotation = if (displayRotation == Surface.ROTATION_0 || displayRotation == Surface.ROTATION_180) {
+                                Configuration.ORIENTATION_PORTRAIT
                             } else {
-                                screenWidth = max(resources.displayMetrics.widthPixels, resources.displayMetrics.heightPixels)
-                                screenHeight = min(resources.displayMetrics.widthPixels, resources.displayMetrics.heightPixels)
+                                Configuration.ORIENTATION_LANDSCAPE
                             }
 
-                            removeFloating()
-                            initConfig()
-                            try {
-                                chooseAppFloatingView.onScreenRotationChanged(screenRotation)
-                            } catch (e: Exception) {}
+                            if (tempScreenRotation != screenRotation) {
+                                screenRotation = tempScreenRotation
+
+                                if (screenRotation == Configuration.ORIENTATION_PORTRAIT) {
+                                    screenHeight = max(resources.displayMetrics.widthPixels, resources.displayMetrics.heightPixels)
+                                    screenWidth = min(resources.displayMetrics.widthPixels, resources.displayMetrics.heightPixels)
+                                } else {
+                                    screenWidth = max(resources.displayMetrics.widthPixels, resources.displayMetrics.heightPixels)
+                                    screenHeight = min(resources.displayMetrics.widthPixels, resources.displayMetrics.heightPixels)
+                                }
+
+                                removeFloating()
+                                initConfig()
+                                runCatching { chooseAppFloatingView.onScreenRotationChanged(screenRotation) }
+                            }
                         }
                     }
                 }
+                iWindowManager.watchRotation(rotationWatcher, Display.DEFAULT_DISPLAY)
+            }.onFailure {
+                Log.w(TAG, "watchRotation skipped (Shizuku not ready)", it)
             }
-            iWindowManager.watchRotation(rotationWatcher, Display.DEFAULT_DISPLAY)
 
             displayManager = getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
             displayManager.registerDisplayListener(displayListener, null)

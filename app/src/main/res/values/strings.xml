@@ -39,7 +39,7 @@
     <string name="label_notification_apps">Take over notification app selection</string>
     <string name="all_apps">All apps</string>
     <string name="edit_apps">edit</string>
-    <string name="permission_info">Mi-Freeform uses Shizuku/Sui for its core freeform operations. Accessibility keeps the service alive, overlay permission displays the window, and notification access allows notification apps to open in freeform.</string>
+    <string name="permission_info">Mi-Freeform uses Shizuku/Sui for core freeform operations. Accessibility keeps the taskbar/sidebar alive and overlay permission displays it. Without Shizuku, the sidebar, app picker, and notification actions can still launch apps normally in fullscreen.</string>
     <string name="shizuku_no_start">Shizuku/Sui</string>
     <string name="sui_start">Sui service is already running</string>
     <string name="shizuku_start">Shizuku service is already running</string>

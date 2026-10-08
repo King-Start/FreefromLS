@@ -14,7 +14,7 @@ Current support:
 - Open the favorites app with a tile
 - Make the APP that sends notifications open in freeform mode
 - Reset all active freeform windows through a Settings action or an optional Quick Settings tile
-- Start a validated package/activity through the explicit Shizuku launch API
+- Start a validated package/activity through the explicit launch API; without Shizuku it falls back to normal fullscreen launching
 
 ## Download
 [Release](https://github.com/Agus-style/Mi-FreeFormn/releases/tag/freefrom)
