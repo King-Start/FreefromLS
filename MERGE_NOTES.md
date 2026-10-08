@@ -61,3 +61,9 @@ This project uses `Mi-FreeFormn-flyme` as the base. The other three uploaded pro
 4. **Pilihan backend:** pengaturan baru `backend_mode` (Otomatis / hanya Shizuku / hanya LSPosed / tanpa freeform) lewat
    `BackendSelector`; semua titik peluncuran (sidebar, picker, notifikasi, API) dan kartu status memakainya.
 5. Perbaikan putaran 1-2 (listener, 7 pengaturan baru, string, `values-in`) diterapkan ulang di atas zip ini.
+
+## Perbaikan error build CI (putaran 4)
+
+- `HookLauncher.kt`: `param.classLoader` dipanggil di dalam callback hook, tempat `param` adalah `MethodHookParam`
+  (tidak punya `classLoader`). Class loader paket kini disimpan di `packageClassLoader` di luar callback.
+- `FreeFormHookWindow.kt`: `R.id.texture_view` belum terdefinisi; ditambahkan ke `res/values/ids.xml`.

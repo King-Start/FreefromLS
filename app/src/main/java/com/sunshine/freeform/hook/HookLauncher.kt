@@ -32,10 +32,13 @@ class HookLauncher : IXposedHookLoadPackage {
         if (param.packageName != "com.android.launcher3" &&
             param.packageName != "com.android.quickstep") return
 
+        // Simpan class loader paket di sini: di dalam callback hook, `param`
+        // adalah MethodHookParam (tidak punya classLoader).
+        val packageClassLoader = param.classLoader
         runCatching {
             val taskOverlayFactory = XposedHelpers.findClass(
                 "com.android.quickstep.TaskOverlayFactory",
-                param.classLoader
+                packageClassLoader
             )
             XposedBridge.hookAllMethods(
                 taskOverlayFactory,
@@ -62,7 +65,7 @@ class HookLauncher : IXposedHookLoadPackage {
                         val appContext = getModuleContext() ?: return
                         val shortcutClass = XposedHelpers.findClass(
                             "com.android.launcher3.popup.RemoteActionShortcut",
-                            param.classLoader
+                            packageClassLoader
                         )
 
                         val request = Intent("com.sunshine.freeform.action.START_FREEFORM").apply {
