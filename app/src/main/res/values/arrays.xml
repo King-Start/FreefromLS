@@ -21,6 +21,11 @@
         <item>1</item>
     </integer-array>
 
+    <string-array name="xposed_scope">
+        <item>android</item>
+        <item>com.android.systemui</item>
+    </string-array>
+
     <array name="waveSideBarLetters">
         <item>A</item>
         <item>B</item>
@@ -49,4 +54,17 @@
         <item>Y</item>
         <item>Z</item>
     </array>
+
+    <string-array name="backend_mode">
+        <item>Automatic (Shizuku → LSPosed → fullscreen)</item>
+        <item>Shizuku/Sui only</item>
+        <item>LSPosed/Xposed only</item>
+        <item>No freeform (taskbar/fullscreen only)</item>
+    </string-array>
+    <integer-array name="backend_mode_value">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+    </integer-array>
 </resources>

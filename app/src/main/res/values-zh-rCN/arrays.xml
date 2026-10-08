@@ -38,4 +38,11 @@
         <item>Y</item>
         <item>Z</item>
     </array>
+
+    <string-array name="backend_mode">
+        <item>自动（Shizuku → LSPosed → 全屏）</item>
+        <item>仅 Shizuku/Sui</item>
+        <item>仅 LSPosed/Xposed</item>
+        <item>不使用小窗（仅任务栏/全屏）</item>
+    </string-array>
 </resources>

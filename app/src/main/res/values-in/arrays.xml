@@ -9,4 +9,11 @@
         <item>Layanan aksesibilitas</item>
         <item>Layanan foreground</item>
     </string-array>
+
+    <string-array name="backend_mode">
+        <item>Otomatis (Shizuku → LSPosed → layar penuh)</item>
+        <item>Hanya Shizuku/Sui</item>
+        <item>Hanya LSPosed/Xposed</item>
+        <item>Tanpa freeform (hanya taskbar/layar penuh)</item>
+    </string-array>
 </resources>

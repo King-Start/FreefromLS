@@ -14,8 +14,8 @@ android {
         applicationId "com.sunshine.freeform"
         minSdk 27
         targetSdk 33
-        versionCode 3000
-        versionName "3.0.00"
+        versionCode 1800
+        versionName "1.8.00"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
@@ -51,6 +51,7 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.5.0'
     implementation 'com.google.android.material:material:1.7.0-alpha03'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation 'androidx.cardview:cardview:1.0.0'
     implementation 'androidx.navigation:navigation-fragment-ktx:2.3.5'
     implementation 'androidx.navigation:navigation-ui-ktx:2.3.5'
     testImplementation 'junit:junit:4.13.2'
@@ -81,7 +82,10 @@ dependencies {
 
     implementation 'com.github.bumptech.glide:glide:4.13.2'
 
-    // Hidden API access is used by the Shizuku client; no LSPosed module is required.
+    // Optional LSPosed/Xposed module API. Runtime hook support is discovered
+    // only when the user installs and enables a hook framework.
+    compileOnly 'de.robv.android.xposed:api:82'
+
     implementation 'org.lsposed.hiddenapibypass:hiddenapibypass:4.3'
 
     implementation 'com.github.megatronking.stringfog:xor:3.0.0'

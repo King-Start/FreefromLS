@@ -22,7 +22,10 @@
 
 # 混淆会导致序列化失败
 -keep class com.sunshine.freeform.bean.MotionEventBean {*;}
-# 不混淆需要hook的类
+# 不混淆需要hook的类 (modul Xposed dimuat lewat nama kelas di assets/xposed_init)
+-keep class com.sunshine.freeform.hook.** { *; }
+-keep class de.robv.android.xposed.** { *; }
+-dontwarn de.robv.android.xposed.**
 
 #避免对AIDL混淆
 -keep class * implements android.os.IInterface {*;}

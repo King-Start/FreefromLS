@@ -1,4 +1,4 @@
-# Audit fitur referensi dan perbaikan Shizuku-only
+# Audit fitur referensi dan perbaikan multi-capability
 
 Audit ini membandingkan source project gabungan dengan tiga arsip referensi:
 
@@ -8,12 +8,11 @@ Audit ini membandingkan source project gabungan dengan tiga arsip referensi:
 
 ## Batasan penting
 
-YAMF dan reYAMF menggunakan `xposed_init`, `HookLauncher`, `HookSystem`, dan service Xposed untuk membaca/mengubah launcher, recents, taskbar, serta task system. Jalur tersebut tidak dipindahkan karena build ini wajib memakai Shizuku/Sui saja. Shizuku digunakan untuk binder system service, virtual display, activity task manager, window manager, dan input manager.
+Build ini sekarang menyediakan tiga jalur kemampuan. Kode hook Xposed/LSPosed dimuat hanya bila framework hook mengaktifkan module ini; pada instalasi biasa kode tersebut tidak dijalankan.
 
-Build ini sekarang memiliki dua tingkat kemampuan:
-
-- **Dengan Shizuku/Sui:** virtual display, freeform window, task/display management, input injection, dan pembukaan multi-window.
-- **Tanpa Shizuku:** accessibility/overlay taskbar/sidebar tetap dapat menampilkan daftar aplikasi, membuka aplikasi secara normal fullscreen, menjalankan action notifikasi secara normal, dan memakai explicit launch API sebagai launcher biasa. Ini bukan freeform window sistem.
+- **Dengan Shizuku/Sui:** virtual display, freeform window, task/display management, input injection, dan pembukaan multi-window melalui service aplikasi.
+- **Dengan LSPosed/Xposed:** framework display bridge, system display-rotation workaround, input routing, app termination, recents action “Open with Mi-Freeform”, dan binder `user.mifreeform` untuk freeform tanpa Shizuku. Jalur ini sensitif terhadap versi Android/OEM.
+- **Tanpa keduanya:** accessibility/overlay taskbar/sidebar tetap dapat menampilkan daftar aplikasi, membuka aplikasi secara normal fullscreen, menjalankan action notifikasi secara normal, dan memakai explicit launch API sebagai launcher biasa. Ini bukan freeform window sistem.
 
 ## Matriks fitur
 
@@ -32,13 +31,13 @@ Build ini sekarang memiliki dua tingkat kemampuan:
 | App list/app picker | Memilih aplikasi untuk dibuka | Ada | Dipertahankan melalui `FloatingActivity` |
 | Quick Settings: new window | Membuka app picker dari Quick Settings | Ada | Dipertahankan |
 | Quick Settings: reset all | Menutup semua window aktif | Ditambahkan | Tile baru dan action Settings baru |
-| Notification launch | Membuka aplikasi dari notifikasi | Ada | Dipertahankan dengan PendingIntent melalui Shizuku |
-| Explicit launch API | Aplikasi lain meminta target package/activity dibuka | Ditambahkan/diperbaiki | Broadcast tervalidasi memakai Shizuku, tanpa launcher hook |
-| Launch current foreground app | Membuka aplikasi yang sedang terlihat sekarang | Tidak dipindahkan | Referensi membaca current task melalui hook Xposed; tidak aman dibuat sebagai Shizuku-only tanpa API task yang stabil |
-| Recents app icon | Membuka dari ikon aplikasi di recents | Tidak dipindahkan | Bergantung pada HookLauncher/Xposed |
-| Taskbar integration | Membuka dari taskbar | Tidak dipindahkan | Bergantung pada HookLauncher/Xposed |
-| Home long press/Assistant | Membuka current app melalui tombol Home/Assistant | Tidak dipindahkan | Referensi menggunakan activity/hook launcher; current app tidak memaksa menggantikan Assistant |
-| App icon long press | Menu launcher untuk membuka freeform | Tidak dipindahkan | Bergantung pada hook launcher |
+| Notification launch | Membuka aplikasi dari notifikasi | Ada | Shizuku memakai freeform; Xposed memakai binder bridge; tanpa keduanya mengirim PendingIntent normal |
+| Explicit launch API | Aplikasi lain meminta target package/activity dibuka | Ditambahkan/diperbaiki | Broadcast tervalidasi; Shizuku freeform, Xposed bridge, atau fullscreen normal |
+| Launch current foreground app | Membuka aplikasi yang sedang terlihat sekarang | Sebagian | Xposed dapat menyediakan jalur launcher/recents; API explicit tetap membutuhkan target package/activity |
+| Recents app icon | Membuka dari ikon aplikasi di recents | Ditambahkan untuk Xposed | `HookLauncher` menambahkan action “Open with Mi-Freeform” pada Launcher3/Quickstep |
+| Taskbar integration | Membuka dari taskbar | Ada | Sidebar/taskbar internal selalu tersedia; launcher taskbar OEM tetap bergantung pada API/OEM hook |
+| Home long press/Assistant | Membuka current app melalui tombol Home/Assistant | Sebagian | Tidak mengganti Assistant global; recents action dan explicit API tersedia |
+| App icon long press | Menu launcher untuk membuka freeform | Sebagian | Jalur OEM launcher sensitif versi; app picker/sidebar internal tetap tersedia |
 | SurfaceView mode | Alternatif TextureView/SurfaceView | Tidak dipindahkan | Membutuhkan perubahan rendering dan input besar; TextureView dipertahankan agar input Shizuku stabil |
 | Show IME in window | Memaksa keyboard tampil pada virtual display | Belum | Referensi memakai `setDisplayImePolicy` dan flag display khusus; perlu API hidden berbeda per Android/OEM sehingga tidak dipasang secara palsu |
 | Launch method move/start/hybrid | Cara memindahkan task atau memulai activity | Belum | Mode referensi bergantung pada task/launcher hook; build ini memakai jalur activity start melalui Shizuku yang lebih aman |
@@ -147,16 +146,13 @@ Perbaikan: restart sekarang meneruskan `EXTRA_USER`, `EXTRA_COMPONENT_NAME`, dan
 
 API baru memvalidasi package/activity melalui PackageManager sebelum membuat virtual display. Request invalid ditolak tanpa membuat window rusak.
 
-## Fitur yang sengaja tidak diambil
+## Fitur yang masih dibatasi
 
-Fitur berikut ada di arsip referensi, tetapi tidak dimasukkan karena membutuhkan Xposed/LSPosed atau API hidden yang tidak stabil:
+Fitur berikut tetap dibatasi karena sangat bergantung pada versi launcher/OEM dan tidak dapat dijamin hanya melalui source static:
 
-- Hook ikon recents.
-- Hook taskbar.
-- Hook long press ikon launcher.
-- Hook Home/Assistant untuk mengambil current foreground task.
-- Hook system/launcher untuk memindahkan task secara paksa.
+- Hook taskbar OEM dan hook long press ikon launcher pada semua launcher.
+- Hook Home/Assistant untuk mengambil current foreground task tanpa mengganti Assistant global.
 - Penggantian Assistant App secara otomatis.
 - Mode SurfaceView/IME khusus sebelum diuji pada Android/OEM target.
 
-Menyalin fitur tersebut tanpa hook akan menghasilkan menu yang terlihat ada tetapi tidak bekerja. Karena itu fitur yang belum dapat dijamin tidak dimasukkan sebagai setting palsu.
+Jalur Xposed/LSPosed yang dimasukkan berada di `app/src/main/java/com/sunshine/freeform/hook/`, terdaftar melalui `assets/xposed_init`, dan memakai binder `user.mifreeform`. Jika hook tidak aktif atau gagal karena ROM, adapter otomatis turun ke mode fullscreen normal.

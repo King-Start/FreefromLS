@@ -1,6 +1,6 @@
 # Mi-FreeForm Open API
 
-Mi-FreeForm is a Shizuku/Sui-only application. External apps can open the built-in app picker through the exported activity below; the picker then starts the selected app in freeform mode through Mi-FreeForm's Shizuku service.
+Mi-FreeForm supports three capability levels. Shizuku/Sui is the preferred freeform backend; an optional LSPosed/Xposed module provides a system-process freeform bridge; without either one, the same sidebar/app picker works as a normal fullscreen taskbar.
 
 ## Open the app picker
 
@@ -20,7 +20,7 @@ val intent = Intent().setClassName(
 context.startActivity(intent)
 ```
 
-The Mi-FreeForm keep-alive service must be running, Shizuku or Sui must be authorized for Mi-FreeForm, and the required overlay permission must be enabled. The launcher/recents hook is not part of this build.
+The Mi-FreeForm keep-alive service and overlay permission are required. Shizuku/Sui is required for the preferred virtual-display backend; alternatively enable this APK as an LSPosed/Xposed module so the `user.mifreeform` bridge is available. If neither capability is active, the picker still launches apps fullscreen.
 
 ## Explicit Shizuku launch broadcast
 
@@ -50,4 +50,4 @@ val request = Intent("com.sunshine.freeform.action.START_FREEFORM").apply {
 context.sendBroadcast(request)
 ```
 
-This is an explicit package/activity API. With Shizuku it opens the target in freeform; without Shizuku it launches the same target normally in fullscreen. It does not inspect the current launcher task; that behavior in YAMF/reYAMF depended on Xposed launcher hooks and is intentionally not included.
+This is an explicit package/activity API. With Shizuku it opens the target through the virtual display; with LSPosed/Xposed it uses the `user.mifreeform` bridge; without either it launches the same target normally in fullscreen. The optional Xposed module also adds an “Open with Mi-Freeform” action to compatible Launcher3/Quickstep recents. Launcher/OEM taskbar hooks remain version-sensitive.

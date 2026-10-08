@@ -21,6 +21,8 @@ import com.sunshine.freeform.app.MiFreeform
 import com.sunshine.freeform.databinding.ActivityPermissionBinding
 import com.sunshine.freeform.ui.splash.SplashActivity
 import com.sunshine.freeform.utils.PermissionUtils
+import com.sunshine.freeform.utils.BackendSelector
+import com.sunshine.freeform.utils.XposedCapability
 import rikka.sui.Sui
 
 
@@ -73,10 +75,12 @@ class PermissionActivity : AppCompatActivity(), View.OnClickListener {
         checkNotificationPermission()
         checkKeepAliveService()
 
-        val r1 = checkShizukuPermission()
+        // Shizuku/LSPosed are optional capabilities. The standalone taskbar
+        // is allowed to continue with only overlay and keep-alive permissions.
+        checkShizukuPermission()
         val r3 = checkOverlayPermission()
 
-        return r1 && r3
+        return r3
     }
 
     private fun checkOverlayPermission(): Boolean {
@@ -108,15 +112,21 @@ class PermissionActivity : AppCompatActivity(), View.OnClickListener {
     }
 
     private fun checkShizukuPermission(): Boolean {
-        val result = MiFreeform.me?.isRunning?.value!!
+        val shizuku = BackendSelector.allowsShizuku() && MiFreeform.me?.isRunning?.value == true
+        val xposed = BackendSelector.allowsXposed() && XposedCapability.isAvailable()
+        val result = shizuku || xposed
         if (result) {
             binding.content.infoShizukuBg.setBackgroundColor(getColor(R.color.success_color))
             binding.content.imageViewShizukuService.setImageDrawable(AppCompatResources.getDrawable(this, R.drawable.ic_done))
-            binding.content.textViewShizukuServiceInfo.text = if (Sui.isSui()) getString(R.string.sui_start) else getString(R.string.shizuku_start)
+            binding.content.textViewShizukuServiceInfo.text = when {
+                shizuku -> if (Sui.isSui()) getString(R.string.sui_start) else getString(R.string.shizuku_start)
+                xposed -> getString(R.string.xposed_start_short)
+                else -> getString(R.string.standalone_mode)
+            }
         } else {
             binding.content.infoShizukuBg.setBackgroundColor(getColor(R.color.warn_color))
             binding.content.imageViewShizukuService.setImageDrawable(AppCompatResources.getDrawable(this, R.drawable.ic_error_white))
-            binding.content.textViewShizukuServiceInfo.text = getString(R.string.shizuku_no_start)
+            binding.content.textViewShizukuServiceInfo.text = getString(R.string.standalone_mode)
         }
         return result
     }

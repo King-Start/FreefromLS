@@ -19,7 +19,7 @@ import com.sunshine.freeform.R
 import com.sunshine.freeform.systemapi.UserHandle
 import com.sunshine.freeform.ui.freeform.FreeformConfig
 import com.sunshine.freeform.ui.freeform.FreeformService
-import com.sunshine.freeform.utils.ShizukuCapability
+import com.sunshine.freeform.utils.BackendSelector
 import com.sunshine.freeform.ui.freeform.FreeformView
 import java.lang.reflect.Method
 import kotlin.collections.ArrayList
@@ -70,15 +70,15 @@ class AllAppsAdapter(
                     .setComponent(ComponentName(packageName, activityName))
                     .setPackage(packageName)
                     .addCategory(Intent.CATEGORY_LAUNCHER)
-                if (ShizukuCapability.isAuthorized()) {
+                if (BackendSelector.useShizuku()) {
                     context.startService(
                         Intent(context, FreeformService::class.java)
                             .setAction(FreeformService.ACTION_START_INTENT)
                             .putExtra(Intent.EXTRA_USER, userId)
                             .putExtra(Intent.EXTRA_INTENT, launchIntent)
                     )
-                } else {
-                    // Standalone fallback: launch normally, like a taskbar.
+                } else if (!BackendSelector.launchXposed(context, launchIntent, userId)) {
+                    // No system hook: launch normally, like a taskbar.
                     context.startActivity(launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
                 }
                 callback.onClick()

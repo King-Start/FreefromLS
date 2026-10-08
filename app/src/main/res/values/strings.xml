@@ -31,6 +31,9 @@
     <string name="start_qq_fail">Failed to open QQ</string>
     <string name="sui_start_short">Sui activated</string>
     <string name="shizuku_start_short">Shizuku is active</string>
+    <string name="xposed_start_short">LSPosed/Xposed bridge is active</string>
+    <string name="standalone_mode">Standalone taskbar mode (no Shizuku/LSPosed)</string>
+    <string name="xposed_description">Optional LSPosed/Xposed freeform bridge and system display hooks</string>
     <string name="accessibility_desc">Mi-Freeform keep alive service. This service can ensure the background survival of Mi-Freeform. Mi-Freeform does not collect any information through this service.</string>
     <string name="request_overlay_permission_fail">Unable to jump to the settings interface, please manually go to the settings to enable the \"display on top of other application interfaces\" permission of the Mi-Freeform</string>
     <string name="request_overlay_permission">Please select the Mi-Freeform to enable the permission of \"display in the upper layer of other application interface\"</string>
@@ -93,7 +96,7 @@
     <string name="welcome">Welcome to Use Mi-Freeform</string>
     <string name="guide_a">Through the following tutorials, you will get started with Mi-Freefrom faster</string>
     <string name="button_step_a">1. Preparation before using the Mi-Freeform</string>
-    <string name="guide_a_text">\t\t<font color="red"><b>Special reminder: Mi-Freeform cannot run in Vulkan mode, if you have turned on similar options (such as Kaleidoscope ROM-Settings-System-Lab \"Use Vulkan for HWUI Rendering\"), please turn off this option, forcibly stop the Mi-Freeform and run again, otherwise it will crash! Please note that switching the Vulkan option may cause the device to fail to start. Please do not try on the main device!</b></font>\n\t\tBefore using the meter window, you must be introduced to the use of the meter window. <b>Mi-Freeform requires Shizuku/Sui only</b>, if you don\'t know the above tools, please check the relevant information by yourself, <b>use Mi-Freeform after installation on the device</b>. \n\t\tMi-Freeform currently supports a variety of startup methods, including: 1. Sidebar, 2. Quick tile 3. Reserved activities, etc. In the future, Mi-Freeform will support more startup methods.</string>
+    <string name="guide_a_text">\t\t<font color="red"><b>Special reminder: Mi-Freeform cannot run in Vulkan mode, if you have turned on similar options (such as Kaleidoscope ROM-Settings-System-Lab \"Use Vulkan for HWUI Rendering\"), please turn off this option, forcibly stop the Mi-Freeform and run again, otherwise it will crash! Please note that switching the Vulkan option may cause the device to fail to start. Please do not try on the main device!</b></font>\n\t\tBefore using the meter window, you must be introduced to the use of the meter window. <b>Mi-Freeform uses Shizuku/Sui for the preferred system freeform mode.</b> LSPosed/Xposed can provide the optional hook backend, while without both the sidebar works as a normal fullscreen taskbar. <b>Use Mi-Freeform after installation on the device</b>. \n\t\tMi-Freeform currently supports a variety of startup methods, including: 1. Sidebar, 2. Quick tile 3. Reserved activities, etc. In the future, Mi-Freeform will support more startup methods.</string>
     <string name="button_step_b">2. Understand the control method of Mi-Freeform</string>
     <string name="guide_move">How does the freeform move? How to hang? Drag the indicated button to the four corners of the screen to try it. To resume from the suspended state, just click the freeform interface.</string>
     <string name="guide_back">Very good! So how to return to the previous interface in the freeform? Click on the indicated button</string>
@@ -226,4 +229,6 @@
     <string name="pref_perf_overlay_interval_summary">How often (seconds) the RAM info refreshes</string>
     <string name="focus_timer_done">Done! 🎉</string>
     <string name="perf_overlay_ram_format">RAM: %1$d/%2$dMB</string>
+    <string name="backend_mode_title">Freeform backend</string>
+    <string name="backend_mode_summary">Automatic tries Shizuku/Sui first, then LSPosed/Xposed, then a normal fullscreen taskbar. Choose one to force it.</string>
 </resources>

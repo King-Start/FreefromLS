@@ -6,12 +6,12 @@ import android.content.Context
 import android.content.Intent
 import android.util.Log
 import com.sunshine.freeform.ui.freeform.FreeformService
-import com.sunshine.freeform.utils.ShizukuCapability
+import com.sunshine.freeform.utils.BackendSelector
 
 /**
- * Public, explicit launch API. It replaces the old launcher/recents hook for
- * callers that already know the target package/activity. The actual activity
- * launch still goes through FreeformService and Shizuku.
+ * Public, explicit launch API for callers that already know the target
+ * package/activity. It selects the Shizuku backend, the optional Xposed
+ * bridge, or the normal fullscreen launcher path.
  */
 class StartFreeformApiReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
@@ -22,15 +22,20 @@ class StartFreeformApiReceiver : BroadcastReceiver() {
             return
         }
         val component = target.component ?: return
-        val userId = intent.getIntExtra(FreeformService.EXTRA_USER_ID, -1)
+        val userId = intent.getIntExtra(
+            FreeformService.EXTRA_USER_ID,
+            intent.getIntExtra("userId", -1)
+        )
 
-        if (!ShizukuCapability.isAuthorized()) {
-            // The same API remains useful as a normal taskbar launcher when
-            // Shizuku is unavailable; only the freeform display is skipped.
-            runCatching {
-                context.startActivity(target.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
-            }.onFailure {
-                Log.e(TAG, "Unable to launch standalone target", it)
+        if (!BackendSelector.useShizuku()) {
+            // LSPosed/Xposed can provide the same freeform bridge without
+            // Shizuku. If it is absent too, use a normal fullscreen launch.
+            if (!BackendSelector.launchXposed(context, target, if (userId < 0) 0 else userId)) {
+                runCatching {
+                    context.startActivity(target.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+                }.onFailure {
+                    Log.e(TAG, "Unable to launch standalone target", it)
+                }
             }
             return
         }

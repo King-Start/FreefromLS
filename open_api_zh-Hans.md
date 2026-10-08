@@ -1,6 +1,6 @@
 # 米窗开放 API
 
-米窗是仅使用 Shizuku/Sui 的应用。其他应用可以打开米窗提供的应用选择器，选择器会通过米窗的 Shizuku 服务启动小窗应用。
+米窗支持三种能力模式：优先使用 Shizuku/Sui 的虚拟屏幕小窗；可选使用 LSPosed/Xposed 的系统进程小窗桥接；两者都没有时，侧边栏和应用选择器仍可作为普通任务栏全屏打开应用。
 
 ## 打开应用选择器
 
@@ -20,7 +20,7 @@ val intent = Intent().setClassName(
 context.startActivity(intent)
 ```
 
-调用前需要确保米窗保活服务正在运行、已为米窗授权 Shizuku 或 Sui，并已开启必要的悬浮窗权限。本版本不使用启动器/最近任务 hook。
+调用前需要确保米窗保活服务正在运行，并已开启必要的悬浮窗权限。Shizuku/Sui 用于首选虚拟屏幕后端；也可以在 LSPosed/Xposed 中启用本 APK 的 module，使用 `user.mifreeform` 桥接。两者都没有时，选择器仍可全屏启动应用。
 
 ## 通过显式广播启动小窗
 
@@ -50,6 +50,6 @@ val request = Intent("com.sunshine.freeform.action.START_FREEFORM").apply {
 context.sendBroadcast(request)
 ```
 
-这是显式的包名/Activity API。有 Shizuku 时会在小窗中打开目标应用；没有 Shizuku 时会像普通任务栏一样全屏打开目标应用。它不会读取当前前台应用。YAMF/reYAMF 的当前应用启动行为依赖 Xposed 启动器 hook，因此没有加入本版本。
+这是显式的包名/Activity API。有 Shizuku 时通过虚拟屏幕打开；有 LSPosed/Xposed 时通过 `user.mifreeform` 桥接；两者都没有时像普通任务栏一样全屏打开。可选 Xposed module 还会为兼容的 Launcher3/Quickstep 最近任务增加“使用米窗打开”操作，但不同 ROM/启动器的 hook 兼容性可能不同。
 
 [English](open_api.md)

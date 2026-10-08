@@ -24,7 +24,7 @@ import com.sunshine.freeform.ui.floating_apps_sort.FloatingAppsSortActivity
 import com.sunshine.freeform.ui.choose_apps.ChooseAppsActivity
 import com.sunshine.freeform.room.FreeFormAppsEntity
 import com.sunshine.freeform.ui.freeform.*
-import com.sunshine.freeform.utils.ShizukuCapability
+import com.sunshine.freeform.utils.BackendSelector
 import java.lang.reflect.Method
 
 /**
@@ -114,30 +114,35 @@ class ChooseAppFloatingAdapter(
                             .setComponent(ComponentName(packageName, activityName))
                             .setPackage(packageName)
                             .addCategory(Intent.CATEGORY_LAUNCHER)
-                        if (ShizukuCapability.isAuthorized()) {
+                        if (BackendSelector.useShizuku()) {
                             context.startService(
                                 Intent(context, FreeformService::class.java)
                                     .setAction(FreeformService.ACTION_START_INTENT)
                                     .putExtra(Intent.EXTRA_USER, apps[position - 1].userId)
                                     .putExtra(Intent.EXTRA_INTENT, launchIntent)
                             )
-                        } else {
-                            // Standalone fallback: the sidebar remains a
-                            // normal taskbar and launches the app fullscreen.
+                        } else if (!BackendSelector.launchXposed(context, launchIntent, apps[position - 1].userId)) {
+                            // No system hook: the sidebar remains a normal
+                            // taskbar and launches the app fullscreen.
                             context.startActivity(launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
                         }
                         callback.onClick()
                     }
                     //长按进入排序界面
                     holder.click.setOnLongClickListener {
-                        context.startActivity(Intent(context, FloatingAppsSortActivity::class.java).apply { addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) })
-                        context.startService(
-                            Intent(context, FreeformService::class.java)
-                                .setAction(FreeformService.ACTION_START_INTENT)
-                                .putExtra(Intent.EXTRA_INTENT,
-                                    Intent(context, FloatingAppsSortActivity::class.java)
-                                )
-                        )
+                        val sortIntent = Intent(context, FloatingAppsSortActivity::class.java)
+                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        if (BackendSelector.useShizuku()) {
+                            context.startService(
+                                Intent(context, FreeformService::class.java)
+                                    .setAction(FreeformService.ACTION_START_INTENT)
+                                    .putExtra(Intent.EXTRA_INTENT, sortIntent)
+                            )
+                        } else if (!BackendSelector.launchXposed(context, sortIntent)) {
+                            // Sorting is an ordinary settings screen in the
+                            // standalone taskbar mode.
+                            context.startActivity(sortIntent)
+                        }
                         callback.onClick()
                         true
                     }

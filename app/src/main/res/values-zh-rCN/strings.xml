@@ -47,6 +47,9 @@
     <string name="start_qq_fail">打开QQ失败</string>
     <string name="sui_start_short">Sui已激活</string>
     <string name="shizuku_start_short">Shizuku已激活</string>
+    <string name="xposed_start_short">LSPosed/Xposed桥接已激活</string>
+    <string name="standalone_mode">独立任务栏模式（没有Shizuku/LSPosed）</string>
+    <string name="xposed_description">可选的LSPosed/Xposed小窗桥接与系统显示Hook</string>
     <string name="home_accessibility_warn_message">当前保活模式为无障碍服务，所以需要开启无障碍服务才可以正常运行。如果在你的设备上无障碍服务有问题或者你不想使用无障碍模式，可以去设置中切换保活模式</string>
     <string name="go_to_start_accessibility">开启无障碍</string>
     <string name="go_to_change_service_type">去切换保活服务类型</string>
@@ -157,7 +160,7 @@
     <string name="welcome">欢迎使用米窗</string>
     <string name="guide_a">通过下面的教程，你将会更快地上手米窗</string>
     <string name="button_step_a">一、使用米窗前的准备</string>
-    <string name="guide_a_text">\t\t<font color="red"><b>特别提醒：米窗无法在Vulkan模式下运行，如果你开启过类似选项（如万花筒ROM-设置-系统-实验室中“使用Vulkan进行HWUI渲染”），请关闭该选项后，强行停止米窗再运行，否则将闪退！请注意，切换Vulkan选项可能会导致设备无法启动，请不用在主要设备上尝试！</b></font>\n\t\t在使用米窗前，必须向你介绍使用米窗所必须的工具。<b>米窗只需要Shizuku/Sui</b>，如果你不了解上述工具，请自行查阅相关资料，<b>在设备上安装完毕后再使用米窗</b>。\n\t\t米窗目前支持多种启动方式，包括：1.侧边栏，2.快捷磁贴 3.预留活动等，在未来，米窗将会支持更多启动方式。</string>
+    <string name="guide_a_text">\t\t<font color="red"><b>特别提醒：米窗无法在Vulkan模式下运行，如果你开启过类似选项（如万花筒ROM-设置-系统-实验室中“使用Vulkan进行HWUI渲染”），请关闭该选项后，强行停止米窗再运行，否则将闪退！请注意，切换Vulkan选项可能会导致设备无法启动，请不用在主要设备上尝试！</b></font>\n\t\t在使用米窗前，必须向你介绍可选的运行方式。<b>Shizuku/Sui用于首选系统小窗模式</b>；LSPosed/Xposed可以提供可选的系统Hook；两者都没有时，侧边栏仍可作为普通全屏任务栏使用。<b>请在设备上安装完毕后再使用米窗</b>。\n\t\t米窗目前支持多种启动方式，包括：1.侧边栏，2.快捷磁贴 3.预留活动等，在未来，米窗将会支持更多启动方式。</string>
     <string name="button_step_b">二、了解米窗的控制方式</string>
 
     <!--activity_guide_study-->
@@ -289,4 +292,6 @@
     <string name="pref_perf_overlay_interval_summary">内存信息的刷新间隔（秒）</string>
     <string name="focus_timer_done">完成！🎉</string>
     <string name="perf_overlay_ram_format">RAM: %1$d/%2$dMB</string>
+    <string name="backend_mode_title">小窗后端</string>
+    <string name="backend_mode_summary">自动模式依次尝试 Shizuku/Sui、LSPosed/Xposed，最后使用普通全屏任务栏。选择其中一项可强制使用。</string>
 </resources>

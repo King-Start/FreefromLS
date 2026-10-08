@@ -23,6 +23,8 @@ import com.sunshine.freeform.databinding.FragmentHomeBinding
 import com.sunshine.freeform.service.KeepAliveService
 import com.sunshine.freeform.ui.guide.GuideActivity
 import com.sunshine.freeform.utils.PermissionUtils
+import com.sunshine.freeform.utils.BackendSelector
+import com.sunshine.freeform.utils.XposedCapability
 import rikka.sui.Sui
 
 class HomeFragment : Fragment(), View.OnClickListener {
@@ -93,15 +95,21 @@ class HomeFragment : Fragment(), View.OnClickListener {
     }
 
     private fun checkShizukuPermission(): Boolean {
-        val result = MiFreeform.me?.isRunning?.value!!
+        val shizuku = BackendSelector.allowsShizuku() && MiFreeform.me?.isRunning?.value == true
+        val xposed = BackendSelector.allowsXposed() && XposedCapability.isAvailable()
+        val result = shizuku || xposed
         if (result) {
             binding.infoShizukuBg.setBackgroundColor(resources.getColor(R.color.success_color))
             binding.imageViewShizukuService.setImageDrawable(AppCompatResources.getDrawable(requireContext(), R.drawable.ic_done))
-            binding.textViewShizukuServiceInfo.text = if (Sui.isSui()) getString(R.string.sui_start_short) else getString(R.string.shizuku_start_short)
+            binding.textViewShizukuServiceInfo.text = when {
+                shizuku -> if (Sui.isSui()) getString(R.string.sui_start_short) else getString(R.string.shizuku_start_short)
+                xposed -> getString(R.string.xposed_start_short)
+                else -> getString(R.string.standalone_mode)
+            }
         } else {
             binding.infoShizukuBg.setBackgroundColor(resources.getColor(R.color.warn_color))
             binding.imageViewShizukuService.setImageDrawable(AppCompatResources.getDrawable(requireContext(), R.drawable.ic_error_white))
-            binding.textViewShizukuServiceInfo.text = getString(R.string.shizuku_no_start)
+            binding.textViewShizukuServiceInfo.text = getString(R.string.standalone_mode)
         }
         return result
     }

@@ -15,7 +15,7 @@ import com.sunshine.freeform.ui.freeform.FreeformConfig
 import com.sunshine.freeform.ui.freeform.FreeformHelper
 import com.sunshine.freeform.ui.freeform.FreeformService
 import com.sunshine.freeform.ui.freeform.FreeformView
-import com.sunshine.freeform.utils.ShizukuCapability
+import com.sunshine.freeform.utils.BackendSelector
 import java.lang.reflect.Method
 
 /**
@@ -40,9 +40,15 @@ class NotificationIntentService : Service() {
     @SuppressLint("WrongConstant")
     private fun startFreeForm(targetPackage: String, targetUserId: Int, targetIntent: PendingIntent?) {
         // Without Shizuku, notification actions still work as a normal
-        // fullscreen launch. Freeform display launch remains Shizuku-only.
-        if (!ShizukuCapability.isAuthorized()) {
-            runCatching { targetIntent?.send() }
+        // fullscreen launch. Freeform display launch can use the optional
+        // Xposed bridge when it is active.
+        if (!BackendSelector.useShizuku()) {
+            val normalLaunchIntent = packageManager.getLaunchIntentForPackage(targetPackage)
+            if (normalLaunchIntent == null || !BackendSelector.launchXposed(this, normalLaunchIntent, targetUserId)) {
+                // No system hook either: deliver the notification action as a
+                // normal fullscreen PendingIntent.
+                runCatching { targetIntent?.send() }
+            }
             stopSelf()
             return
         }

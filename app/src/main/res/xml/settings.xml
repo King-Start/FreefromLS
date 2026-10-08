@@ -17,6 +17,15 @@
             android:title="@string/service_type_title"
             android:summary="@string/service_type_summary"
             app:iconSpaceReserved="false"/>
+
+        <com.sunshine.freeform.ui.view.IntegerSimpleMenuPreference
+            android:key="backend_mode"
+            android:title="@string/backend_mode_title"
+            android:summary="@string/backend_mode_summary"
+            app:defaultValue="0"
+            app:entries="@array/backend_mode"
+            app:entryValues="@array/backend_mode_value"
+            app:iconSpaceReserved="false"/>
         <Preference
             android:key="reset_overlay_setting"
             app:title="@string/preference_reset_overlay_setting"

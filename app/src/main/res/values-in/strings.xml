@@ -89,7 +89,7 @@
     <string name="welcome">Selamat datang di Mi-Freeform</string>
     <string name="guide_a">Dengan tutorial berikut, Anda akan lebih cepat menguasai Mi-Freeform</string>
     <string name="button_step_a">1. Persiapan sebelum menggunakan Mi-Freeform</string>
-    <string name="guide_a_text">\t\t<font color="red"><b>Pengingat khusus: Mi-Freeform tidak dapat berjalan dalam mode Vulkan. Jika Anda mengaktifkan opsi serupa (misalnya Pengaturan - Sistem - Lab \"Use Vulkan for HWUI Rendering\" pada ROM Kaleidoscope), matikan opsi ini, hentikan paksa Mi-Freeform lalu jalankan lagi, jika tidak aplikasi akan crash! Perlu diingat, mengganti opsi Vulkan dapat membuat perangkat gagal menyala. Jangan dicoba di perangkat utama!</b></font>\n\t\tSebelum memakai Mi-Freeform, Anda perlu mengenal cara pemakaiannya. <b>Mi-Freeform hanya memerlukan Shizuku/Sui</b>. Jika Anda belum mengenal alat tersebut, silakan cari informasinya sendiri, <b>gunakan Mi-Freeform setelah alat itu terpasang di perangkat</b>. \n\t\tSaat ini Mi-Freeform mendukung beberapa cara memulai, antara lain: 1. Sidebar, 2. Quick tile, 3. Activity yang disediakan, dan lainnya. Ke depan Mi-Freeform akan mendukung lebih banyak cara memulai.</string>
+    <string name="guide_a_text">\t\t<font color="red"><b>Pengingat khusus: Mi-Freeform tidak dapat berjalan dalam mode Vulkan. Jika Anda mengaktifkan opsi serupa (misalnya Pengaturan - Sistem - Lab \"Use Vulkan for HWUI Rendering\" pada ROM Kaleidoscope), matikan opsi ini, hentikan paksa Mi-Freeform lalu jalankan lagi, jika tidak aplikasi akan crash! Perlu diingat, mengganti opsi Vulkan dapat membuat perangkat gagal menyala. Jangan dicoba di perangkat utama!</b></font>\n\t\tSebelum memakai Mi-Freeform, Anda perlu mengenal cara pemakaiannya. <b>Mi-Freeform memakai Shizuku/Sui sebagai mode freeform sistem yang diutamakan.</b> LSPosed/Xposed dapat menjadi backend hook opsional, sedangkan tanpa keduanya sidebar berfungsi sebagai taskbar layar penuh biasa. <b>Gunakan Mi-Freeform setelah alat itu terpasang di perangkat</b>. \n\t\tSaat ini Mi-Freeform mendukung beberapa cara memulai, antara lain: 1. Sidebar, 2. Quick tile, 3. Activity yang disediakan, dan lainnya. Ke depan Mi-Freeform akan mendukung lebih banyak cara memulai.</string>
     <string name="button_step_b">2. Pahami cara mengendalikan Mi-Freeform</string>
     <string name="guide_move">Bagaimana memindahkan freeform? Bagaimana menggantungnya? Seret tombol yang ditunjukkan ke empat sudut layar untuk mencobanya. Untuk memulihkan dari keadaan menggantung, cukup klik antarmuka freeform.</string>
     <string name="guide_back">Bagus! Lalu bagaimana kembali ke antarmuka sebelumnya di freeform? Klik tombol yang ditunjukkan</string>
@@ -211,4 +211,9 @@
     <string name="pref_perf_overlay_interval_summary">Seberapa sering (detik) info RAM diperbarui</string>
     <string name="focus_timer_done">Selesai! 🎉</string>
     <string name="perf_overlay_ram_format">RAM: %1$d/%2$dMB</string>
+    <string name="backend_mode_title">Backend freeform</string>
+    <string name="backend_mode_summary">Otomatis mencoba Shizuku/Sui dulu, lalu LSPosed/Xposed, lalu taskbar layar penuh biasa. Pilih salah satu untuk memaksanya.</string>
+    <string name="xposed_start_short">Jembatan LSPosed/Xposed aktif</string>
+    <string name="standalone_mode">Mode taskbar mandiri (tanpa Shizuku/LSPosed)</string>
+    <string name="xposed_description">Jembatan freeform LSPosed/Xposed opsional dan hook tampilan sistem</string>
 </resources>

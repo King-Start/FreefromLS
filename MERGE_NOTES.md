@@ -5,15 +5,16 @@ This project uses `Mi-FreeFormn-flyme` as the base. The other three uploaded pro
 ## Merged feature areas
 
 - Flyme-style freeform UI, Shizuku/Sui activation, accessibility/foreground-service modes, notification launching, QS tile, and sidebar from the base project.
-- Sidebar, QS tile, notification actions, the in-app app picker, the reset-all-windows tile, and the explicit package/activity launch API remain the supported launch paths. The launcher/Xposed recent-task hook was removed from this Shizuku-only build.
+- Sidebar, QS tile, notification actions, the in-app app picker, the reset-all-windows tile, and the explicit package/activity launch API remain supported launch paths.
 - Multiple-window limit with per-user duplicate detection, safer virtual-display cleanup, and secure virtual-display option.
-- Shizuku-side Android 8–15 compatibility hardening and defensive task/display handling. System-wide Xposed hooks are intentionally not included.
+- Shizuku/Sui is the preferred Android 8–15 virtual-display path. The optional LSPosed/Xposed path now includes the framework display bridge, system display-rotation workaround, input routing, app termination, and an AIDL bridge exposed as `user.mifreeform`.
+- When neither Shizuku nor LSPosed/Xposed is available, the accessibility/overlay sidebar remains a normal taskbar and launches apps fullscreen.
 - Safer input injection, pinch resizing, swipe home/forward on pre-Q, phone/screen receiver registration on Android 13+, and idempotent cleanup.
 
 ## Important build/runtime notes
 
-- This is a Shizuku/Sui-only system-level tool. LSPosed/Xposed is not required. It cannot be fully validated in a normal desktop JVM or without a real Android device.
-- The source was statically checked and the Gradle task was attempted. The sandbox could not complete Gradle dependency resolution because the Java 11 TLS client could not download several Maven artifacts; this is an environment/network limitation, not a source-level build result.
+- This project supports Shizuku/Sui, optional LSPosed/Xposed, and standalone taskbar mode. The Xposed display bridge is ROM/API-sensitive and needs real-device validation.
+- The source was statically checked and the Gradle task was attempted. The sandbox could not complete Gradle dependency resolution because the Android Gradle Plugin/artifacts were unavailable in the offline environment; this is not a successful APK build result.
 - Install and test on a spare device first. Authorize Shizuku/Sui, enable the required accessibility/overlay permissions, then start the app. Android/OEM framework internals differ, so the Shizuku API path may still vary by ROM.
 - The release key and prebuilt APKs from the uploaded reference archives are intentionally not included. Sign the APK with your own key.
 
@@ -46,3 +47,17 @@ This project uses `Mi-FreeFormn-flyme` as the base. The other three uploaded pro
 - Teks "Done! 🎉" dan "RAM: x/yMB" dipindah ke `focus_timer_done` / `perf_overlay_ram_format`.
 - Ditambah terjemahan Indonesia: `values-in/strings.xml` dan `values-in/arrays.xml`
   (nama merek/non-translatable sengaja jatuh ke default).
+
+## Audit LSPosed/Xposed + pemilih backend (putaran 3)
+
+1. **Keamanan:** `MiFreeFormService.startWithMiFreeForm` (berjalan di system_server) sebelumnya menjalankan string `command`
+   dari pemanggil lewat `sh` tanpa pemeriksaan, sehingga aplikasi apa pun yang bisa mengambil binder `user.mifreeform`
+   dapat menjalankan perintah dengan hak sistem. Kini: hanya UID aplikasi Mi-Freeform yang diterima, perintah harus cocok
+   regex `am start -n pkg/cls --user N --display`, paket dan user harus sama, lalu perintah disusun ulang.
+2. **Build:** `de.robv.android.xposed:api:82` tidak ada di Google/MavenCentral/JitPack; ditambah repo `https://api.xposed.info/`
+   (dibatasi grup itu saja) di `settings.gradle`.
+3. **Release:** `minifyEnabled true` tanpa keep rule akan merusak modul (kelas di `xposed_init` dan metode yang di-hook
+   lewat nama diganti nama oleh R8). Ditambah keep rule `hook.**` dan `de.robv.android.xposed.**`.
+4. **Pilihan backend:** pengaturan baru `backend_mode` (Otomatis / hanya Shizuku / hanya LSPosed / tanpa freeform) lewat
+   `BackendSelector`; semua titik peluncuran (sidebar, picker, notifikasi, API) dan kartu status memakainya.
+5. Perbaikan putaran 1-2 (listener, 7 pengaturan baru, string, `values-in`) diterapkan ulang di atas zip ini.
