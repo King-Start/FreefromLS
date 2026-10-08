@@ -2,19 +2,26 @@ name: Android CI
 
 on:
   workflow_dispatch:
+  push:                # <-- Tambahan agar otomatis jalan saat push
+    branches: [ main ]
   pull_request:
     branches: [ main ]
+
+permissions:
+  contents: write      # <-- WAJIB ditambahkan agar bisa upload ke Release
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      
       - uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
           cache: 'gradle'
+          
       - uses: burrunan/gradle-cache-action@v3
         name: Cache gradle
 
@@ -24,8 +31,15 @@ jobs:
       - name: Build Debug APK
         run: ./gradlew assembleDebug
 
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
+      # --- STEP UPLOAD KE GITHUB RELEASE ---
+      - name: Upload APK to GitHub Release
+        uses: softprops/action-gh-release@v2
         with:
-          name: FloatingX-debug
-          path: app/build/outputs/apk/debug/*.apk
+          # Tag rilis otomatis menggunakan tanggal & nomor run
+          tag_name: v1.0.${{ github.run_number }}
+          name: Release v1.0.${{ github.run_number }}
+          draft: false
+          prerelease: false
+          files: app/build/outputs/apk/debug/*.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
