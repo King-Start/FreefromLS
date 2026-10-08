@@ -118,7 +118,7 @@ class SettingFragment : PreferenceFragmentCompat(), Preference.OnPreferenceClick
                         } else if (!editText.text.isNullOrBlank()) {
                             Toast.makeText(
                                 requireContext(),
-                                "DPI must be a number between 50 and 500",
+                                getString(R.string.dpi_invalid),
                                 Toast.LENGTH_SHORT
                             ).show()
                         }

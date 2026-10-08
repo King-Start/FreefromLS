@@ -44,7 +44,7 @@
 
         <SeekBarPreference
             android:key="freeform_size"
-            android:title="Freeform size"
+            android:title="@string/pref_freeform_size_title"
             app:iconSpaceReserved="false"
             app:defaultValue="75"
             app:min="10"
@@ -53,7 +53,7 @@
 
         <SeekBarPreference
             android:key="freeform_size_land"
-            android:title="Freeform size landscape"
+            android:title="@string/pref_freeform_size_land_title"
             app:iconSpaceReserved="false"
             app:defaultValue="90"
             app:min="10"
@@ -62,7 +62,7 @@
 
         <SeekBarPreference
             android:key="freeform_float_view_size"
-            android:title="Freeform float window Size"
+            android:title="@string/pref_freeform_float_view_size_title"
             app:iconSpaceReserved="false"
             app:defaultValue="20"
             app:min="10"
@@ -71,7 +71,7 @@
 
         <SeekBarPreference
             android:key="freeform_dimming_amount"
-            android:title="Freeform dimming amount"
+            android:title="@string/pref_freeform_dimming_amount_title"
             app:iconSpaceReserved="false"
             app:defaultValue="20"
             app:min="0"
@@ -80,8 +80,8 @@
 
         <SeekBarPreference
             android:key="max_freeform_windows"
-            android:title="Max floating windows"
-            android:summary="Maximum number of active floating windows"
+            android:title="@string/pref_max_freeform_windows_title"
+            android:summary="@string/pref_max_freeform_windows_summary"
             app:iconSpaceReserved="false"
             app:defaultValue="5"
             app:min="1"
@@ -103,8 +103,8 @@
 
         <SwitchPreference
             android:key="remember_freeform_size"
-            android:title="Remember freeform size"
-            android:summary="Remember the last size of floating window"
+            android:title="@string/pref_remember_freeform_size_title"
+            android:summary="@string/pref_remember_freeform_size_summary"
             app:defaultValue="true"
             app:iconSpaceReserved="false"/>
 
@@ -122,35 +122,35 @@
 
         <SwitchPreference
             android:key="enable_suspend_mode"
-            android:title="Suspend mode"
-            android:summary="Double tap bottom bar to minimize window to corner"
+            android:title="@string/pref_enable_suspend_mode_title"
+            android:summary="@string/pref_enable_suspend_mode_summary"
             app:defaultValue="true"
             app:iconSpaceReserved="false"/>
 
         <SwitchPreference
             android:key="enable_destroy_anim"
-            android:title="Close animation"
-            android:summary="Fade out animation when closing floating window"
+            android:title="@string/pref_enable_destroy_anim_title"
+            android:summary="@string/pref_enable_destroy_anim_summary"
             app:defaultValue="true"
             app:iconSpaceReserved="false"/>
 
     </PreferenceCategory>
 
     <PreferenceCategory
-        android:title="Gesture"
+        android:title="@string/category_gesture"
         app:iconSpaceReserved="false">
 
         <SwitchPreference
             android:key="enable_swipe_back"
-            android:title="Swipe back gesture"
-            android:summary="Swipe from left edge to trigger back button"
+            android:title="@string/pref_enable_swipe_back_title"
+            android:summary="@string/pref_enable_swipe_back_summary"
             app:defaultValue="true"
             app:iconSpaceReserved="false"/>
 
         <SeekBarPreference
             android:key="swipe_back_indicator_alpha"
-            android:title="Swipe back indicator opacity"
-            android:summary="Opacity of swipe back indicator bar"
+            android:title="@string/pref_swipe_back_indicator_alpha_title"
+            android:summary="@string/pref_swipe_back_indicator_alpha_summary"
             app:iconSpaceReserved="false"
             app:defaultValue="80"
             app:min="0"
@@ -159,42 +159,72 @@
 
         <SwitchPreference
             android:key="enable_swipe_home"
-            android:title="Swipe up = Home"
-            android:summary="Swipe up from bottom edge to go home"
+            android:title="@string/pref_enable_swipe_home_title"
+            android:summary="@string/pref_enable_swipe_home_summary"
             app:defaultValue="false"
             app:iconSpaceReserved="false"/>
 
         <SwitchPreference
             android:key="enable_swipe_forward"
-            android:title="Swipe left = Forward"
-            android:summary="Swipe from right edge to go forward"
+            android:title="@string/pref_enable_swipe_forward_title"
+            android:summary="@string/pref_enable_swipe_forward_summary"
             app:defaultValue="false"
             app:iconSpaceReserved="false"/>
 
         <SwitchPreference
             android:key="enable_pinch_resize"
-            android:title="Pinch to resize"
-            android:summary="Use two fingers to resize floating window"
+            android:title="@string/pref_enable_pinch_resize_title"
+            android:summary="@string/pref_enable_pinch_resize_summary"
             app:defaultValue="false"
             app:iconSpaceReserved="false"/>
 
         <SwitchPreference
             android:key="enable_shake_minimize"
-            android:title="Shake to minimize"
-            android:summary="Shake device to minimize floating window"
+            android:title="@string/pref_enable_shake_minimize_title"
+            android:summary="@string/pref_enable_shake_minimize_summary"
             app:defaultValue="false"
             app:iconSpaceReserved="false"/>
+
+        <SeekBarPreference
+            android:key="gesture_edge_width"
+            android:title="@string/pref_gesture_edge_width_title"
+            android:summary="@string/pref_gesture_edge_width_summary"
+            app:iconSpaceReserved="false"
+            app:defaultValue="60"
+            app:min="20"
+            android:max="120"
+            app:showSeekBarValue="true"/>
+
+        <SeekBarPreference
+            android:key="gesture_min_distance"
+            android:title="@string/pref_gesture_min_distance_title"
+            android:summary="@string/pref_gesture_min_distance_summary"
+            app:iconSpaceReserved="false"
+            app:defaultValue="100"
+            app:min="50"
+            android:max="300"
+            app:showSeekBarValue="true"/>
+
+        <SeekBarPreference
+            android:key="shake_threshold"
+            android:title="@string/pref_shake_threshold_title"
+            android:summary="@string/pref_shake_threshold_summary"
+            app:iconSpaceReserved="false"
+            app:defaultValue="12"
+            app:min="6"
+            android:max="30"
+            app:showSeekBarValue="true"/>
 
     </PreferenceCategory>
 
     <PreferenceCategory
-        android:title="Appearance"
+        android:title="@string/category_appearance"
         app:iconSpaceReserved="false">
 
         <SeekBarPreference
             android:key="window_opacity"
-            android:title="Window opacity"
-            android:summary="Transparency of floating window"
+            android:title="@string/pref_window_opacity_title"
+            android:summary="@string/pref_window_opacity_summary"
             app:iconSpaceReserved="false"
             app:defaultValue="100"
             app:min="20"
@@ -203,8 +233,8 @@
 
         <SeekBarPreference
             android:key="corner_radius"
-            android:title="Corner radius"
-            android:summary="Rounded corner size of floating window"
+            android:title="@string/pref_corner_radius_title"
+            android:summary="@string/pref_corner_radius_summary"
             app:iconSpaceReserved="false"
             app:defaultValue="0"
             app:min="0"
@@ -231,68 +261,78 @@
     </PreferenceCategory>
 
     <PreferenceCategory
-        android:title="Performance"
+        android:title="@string/category_performance"
         app:iconSpaceReserved="false">
 
         <SwitchPreference
             android:key="auto_close_screen_off"
-            android:title="Auto close on screen off"
-            android:summary="Close all floating windows when screen turns off"
+            android:title="@string/pref_auto_close_screen_off_title"
+            android:summary="@string/pref_auto_close_screen_off_summary"
             app:defaultValue="false"
             app:iconSpaceReserved="false"/>
 
         <SwitchPreference
             android:key="auto_minimize_on_call"
-            android:title="Auto minimize on call"
-            android:summary="Minimize floating window when phone call comes in"
+            android:title="@string/pref_auto_minimize_on_call_title"
+            android:summary="@string/pref_auto_minimize_on_call_summary"
             app:defaultValue="false"
             app:iconSpaceReserved="false"/>
 
         <SwitchPreference
             android:key="lock_window_position"
-            android:title="Lock window position"
-            android:summary="Prevent floating window from being moved"
+            android:title="@string/pref_lock_window_position_title"
+            android:summary="@string/pref_lock_window_position_summary"
             app:defaultValue="false"
             app:iconSpaceReserved="false"/>
 
         <SwitchPreference
             android:key="tap_outside_to_close"
-            android:title="Tap outside to close"
-            android:summary="Tap outside floating window to close it. Turn off to prevent accidental close"
+            android:title="@string/pref_tap_outside_to_close_title"
+            android:summary="@string/pref_tap_outside_to_close_summary"
             app:defaultValue="false"
             app:iconSpaceReserved="false"/>
 
     </PreferenceCategory>
 
     <PreferenceCategory
-        android:title="Utilities"
+        android:title="@string/category_utilities"
         app:iconSpaceReserved="false">
 
         <SwitchPreference
             android:key="snap_to_edge"
-            android:title="Snap to edge"
-            android:summary="Window automatically snaps to screen edge when released"
+            android:title="@string/pref_snap_to_edge_title"
+            android:summary="@string/pref_snap_to_edge_summary"
             app:defaultValue="true"
             app:iconSpaceReserved="false"/>
 
         <SwitchPreference
             android:key="enable_quick_notes"
-            android:title="Quick notes"
-            android:summary="Show a sticky note beside floating window"
+            android:title="@string/pref_enable_quick_notes_title"
+            android:summary="@string/pref_enable_quick_notes_summary"
             app:defaultValue="false"
             app:iconSpaceReserved="false"/>
 
         <SwitchPreference
             android:key="enable_focus_timer"
-            android:title="Focus timer (Pomodoro)"
-            android:summary="25 minute focus timer above floating window. Tap to start/stop"
+            android:title="@string/pref_enable_focus_timer_title"
+            android:summary="@string/pref_enable_focus_timer_summary"
             app:defaultValue="false"
             app:iconSpaceReserved="false"/>
 
+        <SeekBarPreference
+            android:key="focus_timer_minutes"
+            android:title="@string/pref_focus_timer_minutes_title"
+            android:summary="@string/pref_focus_timer_minutes_summary"
+            app:iconSpaceReserved="false"
+            app:defaultValue="25"
+            app:min="5"
+            android:max="90"
+            app:showSeekBarValue="true"/>
+
         <SwitchPreference
             android:key="show_perf_overlay"
-            android:title="Performance overlay"
-            android:summary="Show RAM usage on floating window"
+            android:title="@string/pref_show_perf_overlay_title"
+            android:summary="@string/pref_show_perf_overlay_summary"
             app:defaultValue="false"
             app:iconSpaceReserved="false"/>
 

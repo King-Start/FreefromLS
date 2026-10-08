@@ -416,9 +416,32 @@ class FreeformView(
                 "show_top_bar" -> {
                     applyTopBarVisibility()
                 }
-                else -> {
-                    initConfig()
+                "remember_freeform_position" -> {
+                    config.rememberPosition = sharedPreferences.getBoolean(key, false)
                 }
+                "use_sui_refuse_to_fullscreen" -> {
+                    config.useSuiRefuseToFullScreen = sharedPreferences.getBoolean(key, false)
+                }
+                "manual_adjust_freeform_rotation" -> {
+                    config.manualAdjustFreeformRotation = sharedPreferences.getBoolean(key, false)
+                }
+                "shake_threshold" -> {
+                    shakeThreshold = sharedPreferences.getInt(key, 12).coerceIn(6, 30).toFloat()
+                }
+                "gesture_edge_width" -> {
+                    gestureEdgeDp = sharedPreferences.getInt(key, 60).coerceIn(20, 120).toFloat()
+                }
+                "gesture_min_distance" -> {
+                    gestureMinDistanceDp = sharedPreferences.getInt(key, 100).coerceIn(50, 300).toFloat()
+                }
+                "focus_timer_minutes" -> {
+                    focusMinutes = sharedPreferences.getInt(key, 25).coerceIn(5, 90)
+                    if (!isFocusTimerRunning) focusTimerView?.text = String.format("%02d:00", focusMinutes)
+                }
+                // Key lain (animation_speed, swipe_back_indicator_alpha, posisi/ukuran yang
+                // diingat, dll.) dibaca saat dibutuhkan; JANGAN panggil initConfig() di sini
+                // karena akan mereset ukuran jendela aktif setiap kali posisi disimpan.
+                else -> Unit
             }
         }
 
@@ -494,6 +517,12 @@ class FreeformView(
         autoCloseScreenOff = viewModel.getBooleanSp("auto_close_screen_off", false)
         autoMinimizeOnCall = viewModel.getBooleanSp("auto_minimize_on_call", false)
         isWindowLocked = viewModel.getBooleanSp("lock_window_position", false)
+
+        // Nilai yang sebelumnya hardcode
+        shakeThreshold = viewModel.getIntSp("shake_threshold", 12).coerceIn(6, 30).toFloat()
+        gestureEdgeDp = viewModel.getIntSp("gesture_edge_width", 60).coerceIn(20, 120).toFloat()
+        gestureMinDistanceDp = viewModel.getIntSp("gesture_min_distance", 100).coerceIn(50, 300).toFloat()
+        focusMinutes = viewModel.getIntSp("focus_timer_minutes", 25).coerceIn(5, 90)
     }
 
     /**
@@ -1735,7 +1764,7 @@ class FreeformView(
     private var sensorManager: android.hardware.SensorManager? = null
     private var accelerometer: android.hardware.Sensor? = null
     private var lastShakeTime = 0L
-    private val SHAKE_THRESHOLD = 12f
+    private var shakeThreshold = 12f
     private val SHAKE_INTERVAL = 1000L
 
     private val shakeListener = object : android.hardware.SensorEventListener {
@@ -1745,7 +1774,7 @@ class FreeformView(
             val y = event.values[1]
             val z = event.values[2]
             val acceleration = kotlin.math.sqrt((x*x + y*y + z*z).toDouble()).toFloat() - android.hardware.SensorManager.GRAVITY_EARTH
-            if (acceleration > SHAKE_THRESHOLD) {
+            if (acceleration > shakeThreshold) {
                 val now = System.currentTimeMillis()
                 if (now - lastShakeTime > SHAKE_INTERVAL) {
                     lastShakeTime = now
@@ -2076,8 +2105,10 @@ class FreeformView(
     private var swipeBackStartY = 0f
     private var isSwipeBackTracking = false
     private var swipeIndicatorView: android.widget.ImageView? = null
-    private val SWIPE_BACK_EDGE_WIDTH = 60f
-    private val SWIPE_BACK_MIN_DISTANCE = 100f
+    private var gestureEdgeDp = 60f
+    private var gestureMinDistanceDp = 100f
+    private val SWIPE_BACK_EDGE_WIDTH: Float get() = gestureEdgeDp
+    private val SWIPE_BACK_MIN_DISTANCE: Float get() = gestureMinDistanceDp
     private val SWIPE_BACK_MAX_VERTICAL = 80f
 
     private fun showSwipeIndicator(fromLeft: Boolean) {
@@ -2230,13 +2261,14 @@ class FreeformView(
     // ===== FOCUS TIMER =====
     private var focusTimerView: android.widget.TextView? = null
     private var focusTimerJob: kotlinx.coroutines.Job? = null
+    private var focusMinutes = 25
     private var focusTimeSeconds = 25 * 60
     private var isFocusTimerRunning = false
 
     private fun initFocusTimer() {
         removeFocusTimer()
         val tv = android.widget.TextView(context).apply {
-            text = "25:00"
+            text = String.format("%02d:00", focusMinutes)
             setTextColor(android.graphics.Color.WHITE)
             textSize = 14f
             setBackgroundColor(0xCC000000.toInt())
@@ -2272,7 +2304,7 @@ class FreeformView(
             isFocusTimerRunning = false
         } else {
             isFocusTimerRunning = true
-            focusTimeSeconds = 25 * 60
+            focusTimeSeconds = focusMinutes * 60
             focusTimerJob = scope.launch {
                 while (focusTimeSeconds > 0 && isFocusTimerRunning) {
                     val min = focusTimeSeconds / 60
@@ -2368,8 +2400,8 @@ class FreeformView(
     private var swipeHomeStartX = 0f
     private var swipeHomeStartY = 0f
     private var isSwipeHomeTracking = false
-    private val SWIPE_HOME_EDGE_HEIGHT = 60f
-    private val SWIPE_HOME_MIN_DISTANCE = 100f
+    private val SWIPE_HOME_EDGE_HEIGHT: Float get() = gestureEdgeDp
+    private val SWIPE_HOME_MIN_DISTANCE: Float get() = gestureMinDistanceDp
 
     private fun handleSwipeHomeGesture(event: MotionEvent): Boolean {
         if (!enableSwipeHome) return false
@@ -2424,8 +2456,8 @@ class FreeformView(
     private var swipeForwardStartX = 0f
     private var swipeForwardStartY = 0f
     private var isSwipeForwardTracking = false
-    private val SWIPE_FORWARD_EDGE_WIDTH = 60f
-    private val SWIPE_FORWARD_MIN_DISTANCE = 100f
+    private val SWIPE_FORWARD_EDGE_WIDTH: Float get() = gestureEdgeDp
+    private val SWIPE_FORWARD_MIN_DISTANCE: Float get() = gestureMinDistanceDp
 
     private fun handleSwipeForwardGesture(event: MotionEvent): Boolean {
         if (!enableSwipeForward) return false

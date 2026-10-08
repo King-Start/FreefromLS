@@ -158,4 +158,63 @@
     <string name="show_top_bar_summary">Hold and drag to move the window. Tap left to go back, tap right to close</string>
     <string name="animation_speed_title">Animation speed</string>
     <string name="animation_speed_summary">Higher values make freeform animations faster</string>
+
+    <!-- Pengaturan baru (dipindahkan dari settings.xml hardcode) -->
+    <string name="pref_freeform_size_title">Freeform size</string>
+    <string name="pref_freeform_size_land_title">Freeform size landscape</string>
+    <string name="pref_freeform_float_view_size_title">Freeform float window Size</string>
+    <string name="pref_freeform_dimming_amount_title">Freeform dimming amount</string>
+    <string name="pref_max_freeform_windows_title">Max floating windows</string>
+    <string name="pref_max_freeform_windows_summary">Maximum number of active floating windows</string>
+    <string name="pref_remember_freeform_size_title">Remember freeform size</string>
+    <string name="pref_remember_freeform_size_summary">Remember the last size of floating window</string>
+    <string name="pref_enable_suspend_mode_title">Suspend mode</string>
+    <string name="pref_enable_suspend_mode_summary">Double tap bottom bar to minimize window to corner</string>
+    <string name="pref_enable_destroy_anim_title">Close animation</string>
+    <string name="pref_enable_destroy_anim_summary">Fade out animation when closing floating window</string>
+    <string name="pref_enable_swipe_back_title">Swipe back gesture</string>
+    <string name="pref_enable_swipe_back_summary">Swipe from left edge to trigger back button</string>
+    <string name="pref_swipe_back_indicator_alpha_title">Swipe back indicator opacity</string>
+    <string name="pref_swipe_back_indicator_alpha_summary">Opacity of swipe back indicator bar</string>
+    <string name="pref_enable_swipe_home_title">Swipe up = Home</string>
+    <string name="pref_enable_swipe_home_summary">Swipe up from bottom edge to go home</string>
+    <string name="pref_enable_swipe_forward_title">Swipe left = Forward</string>
+    <string name="pref_enable_swipe_forward_summary">Swipe from right edge to go forward</string>
+    <string name="pref_enable_pinch_resize_title">Pinch to resize</string>
+    <string name="pref_enable_pinch_resize_summary">Use two fingers to resize floating window</string>
+    <string name="pref_enable_shake_minimize_title">Shake to minimize</string>
+    <string name="pref_enable_shake_minimize_summary">Shake device to minimize floating window</string>
+    <string name="pref_gesture_edge_width_title">Gesture edge width</string>
+    <string name="pref_gesture_edge_width_summary">Width of the edge area (dp) that starts back/home/forward swipes</string>
+    <string name="pref_gesture_min_distance_title">Gesture minimum distance</string>
+    <string name="pref_gesture_min_distance_summary">Minimum swipe distance (dp) before a gesture triggers</string>
+    <string name="pref_shake_threshold_title">Shake sensitivity threshold</string>
+    <string name="pref_shake_threshold_summary">Higher value = you must shake harder to minimize</string>
+    <string name="pref_window_opacity_title">Window opacity</string>
+    <string name="pref_window_opacity_summary">Transparency of floating window</string>
+    <string name="pref_corner_radius_title">Corner radius</string>
+    <string name="pref_corner_radius_summary">Rounded corner size of floating window</string>
+    <string name="pref_auto_close_screen_off_title">Auto close on screen off</string>
+    <string name="pref_auto_close_screen_off_summary">Close all floating windows when screen turns off</string>
+    <string name="pref_auto_minimize_on_call_title">Auto minimize on call</string>
+    <string name="pref_auto_minimize_on_call_summary">Minimize floating window when phone call comes in</string>
+    <string name="pref_lock_window_position_title">Lock window position</string>
+    <string name="pref_lock_window_position_summary">Prevent floating window from being moved</string>
+    <string name="pref_tap_outside_to_close_title">Tap outside to close</string>
+    <string name="pref_tap_outside_to_close_summary">Tap outside floating window to close it. Turn off to prevent accidental close</string>
+    <string name="pref_snap_to_edge_title">Snap to edge</string>
+    <string name="pref_snap_to_edge_summary">Window automatically snaps to screen edge when released</string>
+    <string name="pref_enable_quick_notes_title">Quick notes</string>
+    <string name="pref_enable_quick_notes_summary">Show a sticky note beside floating window</string>
+    <string name="pref_enable_focus_timer_title">Focus timer (Pomodoro)</string>
+    <string name="pref_enable_focus_timer_summary">Focus timer above floating window. Tap to start/stop</string>
+    <string name="pref_focus_timer_minutes_title">Focus timer duration</string>
+    <string name="pref_focus_timer_minutes_summary">Length of the focus timer in minutes</string>
+    <string name="pref_show_perf_overlay_title">Performance overlay</string>
+    <string name="pref_show_perf_overlay_summary">Show RAM usage on floating window</string>
+    <string name="category_gesture">Gesture</string>
+    <string name="category_appearance">Appearance</string>
+    <string name="category_performance">Performance</string>
+    <string name="category_utilities">Utilities</string>
+    <string name="dpi_invalid">DPI must be a number between 50 and 500</string>
 </resources>

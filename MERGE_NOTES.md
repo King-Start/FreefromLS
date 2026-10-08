@@ -27,3 +27,14 @@ This project uses `Mi-FreeFormn-flyme` as the base. The other three uploaded pro
 6. Fix settings behavior: persist remembered window size across service restarts, apply dimming/DPI/size/opacity changes safely, clamp invalid preference values, make reset actually clear saved overlay state, keep the service-mode selector consistent, and fail safely when no accelerometer exists.
 7. Add a Shizuku-compatible explicit package/activity launch API, a reset-all-windows Settings action plus Quick Settings tile, and an animation-speed setting; validate API targets before creating a virtual display.
 8. Remove duplicate virtual-display release, clean destroyed view references, and release virtual displays when freeform initialization fails.
+
+## Audit pengaturan (putaran lanjutan)
+
+1. Bug: listener preferensi di `FreeformView` jatuh ke `else -> initConfig()`. Setiap kali posisi/ukuran
+   jendela disimpan (`freeform_remember_*`), ukuran jendela aktif ikut ter-reset. Sekarang tiap key ditangani
+   eksplisit (`remember_freeform_position`, `use_sui_refuse_to_fullscreen`, `manual_adjust_freeform_rotation`).
+2. Nilai yang sebelumnya hardcode kini bisa diatur: `shake_threshold`, `gesture_edge_width`,
+   `gesture_min_distance`, `focus_timer_minutes` (dibaca saat init dan diterapkan langsung saat diubah).
+3. 28 judul + 20 ringkasan di `settings.xml` yang hardcode Inggris dipindah ke `strings.xml`
+   (default + zh-rCN); toast "DPI must be..." juga dipindah ke `dpi_invalid`.
+4. Semua 41 key lama diverifikasi terhubung ke kode; tidak ada key kode yang "yatim" di luar state internal.
