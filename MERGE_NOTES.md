@@ -38,3 +38,11 @@ This project uses `Mi-FreeFormn-flyme` as the base. The other three uploaded pro
 3. 28 judul + 20 ringkasan di `settings.xml` yang hardcode Inggris dipindah ke `strings.xml`
    (default + zh-rCN); toast "DPI must be..." juga dipindah ke `dpi_invalid`.
 4. Semua 41 key lama diverifikasi terhubung ke kode; tidak ada key kode yang "yatim" di luar state internal.
+
+## Audit pengaturan (putaran 2)
+
+- Pengaturan baru: `float_trigger_ratio` (default 90%), `full_trigger_ratio` (105%), `perf_overlay_interval` (2 dtk).
+  Sebelumnya hardcode di `FreeformView`.
+- Teks "Done! 🎉" dan "RAM: x/yMB" dipindah ke `focus_timer_done` / `perf_overlay_ram_format`.
+- Ditambah terjemahan Indonesia: `values-in/strings.xml` dan `values-in/arrays.xml`
+  (nama merek/non-translatable sengaja jatuh ke default).

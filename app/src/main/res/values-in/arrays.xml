@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="floating_show_position">
+        <item>Sisi kiri layar</item>
+        <item>Sisi kanan layar</item>
+    </string-array>
+
+    <string-array name="service_type">
+        <item>Layanan aksesibilitas</item>
+        <item>Layanan foreground</item>
+    </string-array>
+</resources>

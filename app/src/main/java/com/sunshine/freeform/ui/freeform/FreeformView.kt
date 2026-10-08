@@ -425,6 +425,9 @@ class FreeformView(
                 "manual_adjust_freeform_rotation" -> {
                     config.manualAdjustFreeformRotation = sharedPreferences.getBoolean(key, false)
                 }
+                "float_trigger_ratio", "full_trigger_ratio" -> {
+                    if (::binding.isInitialized && rootHeight > 0) refreshActionScale()
+                }
                 "shake_threshold" -> {
                     shakeThreshold = sharedPreferences.getInt(key, 12).coerceIn(6, 30).toFloat()
                 }
@@ -1105,8 +1108,8 @@ class FreeformView(
     }
 
     private fun refreshActionScale() {
-        goFloatScale = (freeformHeight * 0.9f) / rootHeight
-        goFullScale = (freeformHeight * 1.05f) / rootHeight
+        goFloatScale = (freeformHeight * (viewModel.getIntSp("float_trigger_ratio", 90).coerceIn(50, 95) / 100f)) / rootHeight
+        goFullScale = (freeformHeight * (viewModel.getIntSp("full_trigger_ratio", 105).coerceIn(100, 130) / 100f)) / rootHeight
     }
 
     private fun resetScale() {
@@ -2316,7 +2319,7 @@ class FreeformView(
                     focusTimeSeconds--
                 }
                 withContext(Dispatchers.Main) {
-                    focusTimerView?.text = "Done! 🎉"
+                    focusTimerView?.text = context.getString(R.string.focus_timer_done)
                     isFocusTimerRunning = false
                 }
             }
@@ -2382,9 +2385,9 @@ class FreeformView(
                 val usedMem = (runtime.totalMemory() - runtime.freeMemory()) / 1024 / 1024
                 val totalMem = runtime.totalMemory() / 1024 / 1024
                 withContext(Dispatchers.Main) {
-                    perfOverlayView?.text = "RAM: ${usedMem}/${totalMem}MB"
+                    perfOverlayView?.text = context.getString(R.string.perf_overlay_ram_format, usedMem, totalMem)
                 }
-                kotlinx.coroutines.delay(2000)
+                kotlinx.coroutines.delay(viewModel.getIntSp("perf_overlay_interval", 2).coerceIn(1, 10) * 1000L)
             }
         }
     }

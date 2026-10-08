@@ -217,4 +217,13 @@
     <string name="category_performance">Performance</string>
     <string name="category_utilities">Utilities</string>
     <string name="dpi_invalid">DPI must be a number between 50 and 500</string>
+
+    <string name="pref_float_trigger_ratio_title">Float trigger threshold</string>
+    <string name="pref_float_trigger_ratio_summary">Shrink the window below this percent of its size to turn it into a floating bubble</string>
+    <string name="pref_full_trigger_ratio_title">Fullscreen trigger threshold</string>
+    <string name="pref_full_trigger_ratio_summary">Enlarge the window above this percent of its size to open the app in full screen</string>
+    <string name="pref_perf_overlay_interval_title">Performance overlay refresh interval</string>
+    <string name="pref_perf_overlay_interval_summary">How often (seconds) the RAM info refreshes</string>
+    <string name="focus_timer_done">Done! 🎉</string>
+    <string name="perf_overlay_ram_format">RAM: %1$d/%2$dMB</string>
 </resources>

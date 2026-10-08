@@ -78,6 +78,27 @@
             android:max="100"
             app:showSeekBarValue="true"/>
 
+
+        <SeekBarPreference
+            android:key="float_trigger_ratio"
+            android:title="@string/pref_float_trigger_ratio_title"
+            android:summary="@string/pref_float_trigger_ratio_summary"
+            app:iconSpaceReserved="false"
+            app:defaultValue="90"
+            app:min="50"
+            android:max="95"
+            app:showSeekBarValue="true"/>
+
+        <SeekBarPreference
+            android:key="full_trigger_ratio"
+            android:title="@string/pref_full_trigger_ratio_title"
+            android:summary="@string/pref_full_trigger_ratio_summary"
+            app:iconSpaceReserved="false"
+            app:defaultValue="105"
+            app:min="100"
+            android:max="130"
+            app:showSeekBarValue="true"/>
+
         <SeekBarPreference
             android:key="max_freeform_windows"
             android:title="@string/pref_max_freeform_windows_title"
@@ -335,6 +356,16 @@
             android:summary="@string/pref_show_perf_overlay_summary"
             app:defaultValue="false"
             app:iconSpaceReserved="false"/>
+
+        <SeekBarPreference
+            android:key="perf_overlay_interval"
+            android:title="@string/pref_perf_overlay_interval_title"
+            android:summary="@string/pref_perf_overlay_interval_summary"
+            app:iconSpaceReserved="false"
+            app:defaultValue="2"
+            app:min="1"
+            android:max="10"
+            app:showSeekBarValue="true"/>
 
     </PreferenceCategory>
 

@@ -280,4 +280,13 @@
     <string name="category_performance">性能</string>
     <string name="category_utilities">实用工具</string>
     <string name="dpi_invalid">DPI 必须是 50 到 500 之间的数字</string>
+
+    <string name="pref_float_trigger_ratio_title">悬浮触发比例</string>
+    <string name="pref_float_trigger_ratio_summary">将小窗缩小到原始大小的此百分比以下时变为悬浮球</string>
+    <string name="pref_full_trigger_ratio_title">全屏触发比例</string>
+    <string name="pref_full_trigger_ratio_summary">将小窗放大到原始大小的此百分比以上时转为全屏</string>
+    <string name="pref_perf_overlay_interval_title">性能浮层刷新间隔</string>
+    <string name="pref_perf_overlay_interval_summary">内存信息的刷新间隔（秒）</string>
+    <string name="focus_timer_done">完成！🎉</string>
+    <string name="perf_overlay_ram_format">RAM: %1$d/%2$dMB</string>
 </resources>
