@@ -11,9 +11,17 @@
     </string-array>
 
     <string-array name="backend_mode">
-        <item>Otomatis (Shizuku → LSPosed → layar penuh)</item>
+        <item>Otomatis (Shizuku → LSPosed → freeform ROM → layar penuh)</item>
         <item>Hanya Shizuku/Sui</item>
         <item>Hanya LSPosed/Xposed</item>
-        <item>Tanpa freeform (hanya taskbar/layar penuh)</item>
+        <item>Freeform bawaan ROM (tanpa Shizuku/LSPosed)</item>
+        <item>Tanpa freeform (hanya layar penuh)</item>
+    </string-array>
+    <string-array name="standalone_window_size">
+        <item>Standar</item>
+        <item>Besar</item>
+        <item>Setengah kiri/atas</item>
+        <item>Setengah kanan/bawah</item>
+        <item>Maksimal</item>
     </string-array>
 </resources>

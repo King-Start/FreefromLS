@@ -32,7 +32,7 @@
     <string name="sui_start_short">Sui activated</string>
     <string name="shizuku_start_short">Shizuku is active</string>
     <string name="xposed_start_short">LSPosed/Xposed bridge is active</string>
-    <string name="standalone_mode">Standalone taskbar mode (no Shizuku/LSPosed)</string>
+    <string name="standalone_mode">Fullscreen only (no Shizuku/LSPosed/ROM freeform)</string>
     <string name="xposed_description">Optional LSPosed/Xposed freeform bridge and system display hooks</string>
     <string name="accessibility_desc">Mi-Freeform keep alive service. This service can ensure the background survival of Mi-Freeform. Mi-Freeform does not collect any information through this service.</string>
     <string name="request_overlay_permission_fail">Unable to jump to the settings interface, please manually go to the settings to enable the \"display on top of other application interfaces\" permission of the Mi-Freeform</string>
@@ -230,5 +230,12 @@
     <string name="focus_timer_done">Done! 🎉</string>
     <string name="perf_overlay_ram_format">RAM: %1$d/%2$dMB</string>
     <string name="backend_mode_title">Freeform backend</string>
-    <string name="backend_mode_summary">Automatic tries Shizuku/Sui first, then LSPosed/Xposed, then a normal fullscreen taskbar. Choose one to force it.</string>
+    <string name="backend_mode_summary">Automatic tries Shizuku/Sui first, then LSPosed/Xposed, then the ROM\'s built-in freeform (needs \"Enable freeform windows\" in Developer options), then normal fullscreen. Choose one to force it.</string>
+    <string name="standalone_rom_freeform">ROM built-in freeform mode (no Shizuku/LSPosed)</string>
+    <string name="standalone_window_size_title">ROM freeform window size</string>
+    <string name="standalone_window_size_summary">Window size/position used by the ROM built-in freeform mode</string>
+    <string name="standalone_dev_options_title">Open Developer options</string>
+    <string name="standalone_dev_options_summary">Turn on \"Enable freeform windows\" (and \"Force activities to be resizable\" on some ROMs), then restart the device if needed. Only required for the ROM built-in freeform mode.</string>
+    <string name="standalone_freeform_supported">ROM freeform is available on this device</string>
+    <string name="standalone_freeform_unsupported">ROM freeform is not enabled yet. Turn it on in Developer options</string>
 </resources>

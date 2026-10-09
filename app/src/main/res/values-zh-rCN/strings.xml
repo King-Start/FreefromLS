@@ -48,7 +48,7 @@
     <string name="sui_start_short">Sui已激活</string>
     <string name="shizuku_start_short">Shizuku已激活</string>
     <string name="xposed_start_short">LSPosed/Xposed桥接已激活</string>
-    <string name="standalone_mode">独立任务栏模式（没有Shizuku/LSPosed）</string>
+    <string name="standalone_mode">仅全屏（无 Shizuku/LSPosed/系统自由窗口）</string>
     <string name="xposed_description">可选的LSPosed/Xposed小窗桥接与系统显示Hook</string>
     <string name="home_accessibility_warn_message">当前保活模式为无障碍服务，所以需要开启无障碍服务才可以正常运行。如果在你的设备上无障碍服务有问题或者你不想使用无障碍模式，可以去设置中切换保活模式</string>
     <string name="go_to_start_accessibility">开启无障碍</string>
@@ -293,5 +293,12 @@
     <string name="focus_timer_done">完成！🎉</string>
     <string name="perf_overlay_ram_format">RAM: %1$d/%2$dMB</string>
     <string name="backend_mode_title">小窗后端</string>
-    <string name="backend_mode_summary">自动模式依次尝试 Shizuku/Sui、LSPosed/Xposed，最后使用普通全屏任务栏。选择其中一项可强制使用。</string>
+    <string name="backend_mode_summary">自动模式依次尝试 Shizuku/Sui、LSPosed/Xposed、系统自带自由窗口（需在开发者选项中开启“启用可自由调整的窗口”），最后使用普通全屏。选择其中一项可强制使用。</string>
+    <string name="standalone_rom_freeform">系统自带自由窗口模式（无需 Shizuku/LSPosed）</string>
+    <string name="standalone_window_size_title">系统自由窗口大小</string>
+    <string name="standalone_window_size_summary">系统自带自由窗口模式使用的窗口大小和位置</string>
+    <string name="standalone_dev_options_title">打开开发者选项</string>
+    <string name="standalone_dev_options_summary">开启“启用可自由调整的窗口”（部分系统还需开启“强制将活动设为可调整大小”），必要时重启设备。仅系统自带自由窗口模式需要。</string>
+    <string name="standalone_freeform_supported">此设备支持系统自由窗口</string>
+    <string name="standalone_freeform_unsupported">系统自由窗口尚未开启，请在开发者选项中打开</string>
 </resources>

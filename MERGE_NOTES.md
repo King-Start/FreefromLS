@@ -67,3 +67,19 @@ This project uses `Mi-FreeFormn-flyme` as the base. The other three uploaded pro
 - `HookLauncher.kt`: `param.classLoader` dipanggil di dalam callback hook, tempat `param` adalah `MethodHookParam`
   (tidak punya `classLoader`). Class loader paket kini disimpan di `packageClassLoader` di luar callback.
 - `FreeFormHookWindow.kt`: `R.id.texture_view` belum terdefinisi; ditambahkan ke `res/values/ids.xml`.
+
+## Mode freeform bawaan ROM, cara Taskbar (putaran 5)
+
+Terinspirasi farmerbb/Taskbar (Apache-2.0): tanpa Shizuku/LSPosed, aplikasi dibuka lewat
+`ActivityOptions.makeBasic()` + `setLaunchWindowingMode(5)` (freeform, refleksi; Android 7.x memakai
+`setLaunchStackId(2)`) + `setLaunchBounds(Rect)`. Jendela digambar sistem Android.
+
+- `utils/StandaloneFreeform.kt`: deteksi dukungan (`FEATURE_FREEFORM_WINDOW_MANAGEMENT` atau
+  `enable_freeform_support`), peluncuran, dan 5 preset ukuran (standar, besar, setengah kiri/atas,
+  setengah kanan/bawah, maksimal).
+- `BackendSelector`: mode baru `ROM_FREEFORM` (4) dan `launchFallback()` = LSPosed -> freeform ROM -> fullscreen.
+  Mode Otomatis kini: Shizuku -> LSPosed -> freeform ROM -> fullscreen.
+- Pengaturan baru: `standalone_window_size` dan tombol "Buka Opsi pengembang" (menampilkan apakah freeform ROM aktif).
+- Syarat di perangkat: Opsi Pengembang -> "Enable freeform windows" (sebagian ROM juga
+  "Force activities to be resizable"). Profil kerja/klon (userId != 0) tetap jatuh ke fullscreen.
+- Belum ada bilah taskbar overlay (start menu / aplikasi terbaru); itu tahap B.

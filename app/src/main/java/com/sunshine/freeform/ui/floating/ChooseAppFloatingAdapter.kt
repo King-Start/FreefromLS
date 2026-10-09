@@ -121,7 +121,7 @@ class ChooseAppFloatingAdapter(
                                     .putExtra(Intent.EXTRA_USER, apps[position - 1].userId)
                                     .putExtra(Intent.EXTRA_INTENT, launchIntent)
                             )
-                        } else if (!BackendSelector.launchXposed(context, launchIntent, apps[position - 1].userId)) {
+                        } else if (!BackendSelector.launchFallback(context, launchIntent, apps[position - 1].userId)) {
                             // No system hook: the sidebar remains a normal
                             // taskbar and launches the app fullscreen.
                             context.startActivity(launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
@@ -138,7 +138,7 @@ class ChooseAppFloatingAdapter(
                                     .setAction(FreeformService.ACTION_START_INTENT)
                                     .putExtra(Intent.EXTRA_INTENT, sortIntent)
                             )
-                        } else if (!BackendSelector.launchXposed(context, sortIntent)) {
+                        } else if (!BackendSelector.launchFallback(context, sortIntent)) {
                             // Sorting is an ordinary settings screen in the
                             // standalone taskbar mode.
                             context.startActivity(sortIntent)

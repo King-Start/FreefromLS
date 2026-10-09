@@ -56,15 +56,31 @@
     </array>
 
     <string-array name="backend_mode">
-        <item>Automatic (Shizuku → LSPosed → fullscreen)</item>
+        <item>Automatic (Shizuku → LSPosed → ROM freeform → fullscreen)</item>
         <item>Shizuku/Sui only</item>
         <item>LSPosed/Xposed only</item>
-        <item>No freeform (taskbar/fullscreen only)</item>
+        <item>ROM built-in freeform (no Shizuku/LSPosed)</item>
+        <item>No freeform (fullscreen only)</item>
+    </string-array>
+    <string-array name="standalone_window_size">
+        <item>Standard</item>
+        <item>Large</item>
+        <item>Half left/top</item>
+        <item>Half right/bottom</item>
+        <item>Maximized</item>
     </string-array>
     <integer-array name="backend_mode_value">
         <item>0</item>
         <item>1</item>
         <item>2</item>
+        <item>4</item>
         <item>3</item>
+    </integer-array>
+    <integer-array name="standalone_window_size_value">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
     </integer-array>
 </resources>

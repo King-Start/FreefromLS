@@ -26,6 +26,21 @@
             app:entries="@array/backend_mode"
             app:entryValues="@array/backend_mode_value"
             app:iconSpaceReserved="false"/>
+
+        <com.sunshine.freeform.ui.view.IntegerSimpleMenuPreference
+            android:key="standalone_window_size"
+            android:title="@string/standalone_window_size_title"
+            android:summary="@string/standalone_window_size_summary"
+            app:defaultValue="0"
+            app:entries="@array/standalone_window_size"
+            app:entryValues="@array/standalone_window_size_value"
+            app:iconSpaceReserved="false"/>
+
+        <Preference
+            android:key="standalone_open_developer_options"
+            android:title="@string/standalone_dev_options_title"
+            android:summary="@string/standalone_dev_options_summary"
+            app:iconSpaceReserved="false"/>
         <Preference
             android:key="reset_overlay_setting"
             app:title="@string/preference_reset_overlay_setting"

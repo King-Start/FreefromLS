@@ -28,6 +28,7 @@ import com.sunshine.freeform.ui.freeform.FreeformView
 import com.sunshine.freeform.ui.permission.PermissionActivity
 import com.sunshine.freeform.ui.view.IntegerSimpleMenuPreference
 import com.sunshine.freeform.utils.PermissionUtils
+import com.sunshine.freeform.utils.StandaloneFreeform
 
 class SettingFragment : PreferenceFragmentCompat(), Preference.OnPreferenceClickListener,
     Preference.OnPreferenceChangeListener {
@@ -64,6 +65,7 @@ class SettingFragment : PreferenceFragmentCompat(), Preference.OnPreferenceClick
         findPreference<Preference>(NOTIFICATION_FREEFORM_APPS)!!.onPreferenceClickListener = this
         findPreference<Preference>(RESET_OVERLAY_SETTING)!!.onPreferenceClickListener = this
         findPreference<Preference>(RESET_ALL_WINDOWS)!!.onPreferenceClickListener = this
+        findPreference<Preference>("standalone_open_developer_options")?.onPreferenceClickListener = this
         findPreference<SwitchPreference>(SHOW_FLOATING)!!.onPreferenceChangeListener = this
         findPreference<SwitchPreference>(NOTIFY_FREEFORM)!!.onPreferenceChangeListener = this
         findPreference<SwitchPreference>(AUTO_MINIMIZE_ON_CALL)!!.onPreferenceChangeListener = this
@@ -75,6 +77,20 @@ class SettingFragment : PreferenceFragmentCompat(), Preference.OnPreferenceClick
 
     override fun onPreferenceClick(preference: Preference): Boolean {
         when(preference.key) {
+            "standalone_open_developer_options" -> {
+                val ctx = requireContext()
+                val supported = StandaloneFreeform.isSupported(ctx)
+                Snackbar.make(
+                    requireView(),
+                    getString(if (supported) R.string.standalone_freeform_supported else R.string.standalone_freeform_unsupported),
+                    Snackbar.LENGTH_LONG
+                ).show()
+                try {
+                    startActivity(Intent(android.provider.Settings.ACTION_APPLICATION_DEVELOPMENT_SETTINGS))
+                } catch (e: Exception) {
+                    startActivity(Intent(android.provider.Settings.ACTION_SETTINGS))
+                }
+            }
             QUICK_FLOATING_APP -> {
                 requireActivity().startActivity(Intent(requireActivity(), ChooseAppsActivity::class.java).putExtra("type", 1))
             }

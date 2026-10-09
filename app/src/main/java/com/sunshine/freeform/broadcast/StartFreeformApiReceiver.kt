@@ -30,7 +30,7 @@ class StartFreeformApiReceiver : BroadcastReceiver() {
         if (!BackendSelector.useShizuku()) {
             // LSPosed/Xposed can provide the same freeform bridge without
             // Shizuku. If it is absent too, use a normal fullscreen launch.
-            if (!BackendSelector.launchXposed(context, target, if (userId < 0) 0 else userId)) {
+            if (!BackendSelector.launchFallback(context, target, if (userId < 0) 0 else userId)) {
                 runCatching {
                     context.startActivity(target.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
                 }.onFailure {

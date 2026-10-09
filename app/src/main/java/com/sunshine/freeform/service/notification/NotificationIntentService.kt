@@ -44,7 +44,7 @@ class NotificationIntentService : Service() {
         // Xposed bridge when it is active.
         if (!BackendSelector.useShizuku()) {
             val normalLaunchIntent = packageManager.getLaunchIntentForPackage(targetPackage)
-            if (normalLaunchIntent == null || !BackendSelector.launchXposed(this, normalLaunchIntent, targetUserId)) {
+            if (normalLaunchIntent == null || !BackendSelector.launchFallback(this, normalLaunchIntent, targetUserId)) {
                 // No system hook either: deliver the notification action as a
                 // normal fullscreen PendingIntent.
                 runCatching { targetIntent?.send() }

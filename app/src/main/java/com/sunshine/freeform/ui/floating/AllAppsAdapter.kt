@@ -77,7 +77,7 @@ class AllAppsAdapter(
                             .putExtra(Intent.EXTRA_USER, userId)
                             .putExtra(Intent.EXTRA_INTENT, launchIntent)
                     )
-                } else if (!BackendSelector.launchXposed(context, launchIntent, userId)) {
+                } else if (!BackendSelector.launchFallback(context, launchIntent, userId)) {
                     // No system hook: launch normally, like a taskbar.
                     context.startActivity(launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
                 }

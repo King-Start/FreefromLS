@@ -24,6 +24,7 @@ import com.sunshine.freeform.service.KeepAliveService
 import com.sunshine.freeform.ui.guide.GuideActivity
 import com.sunshine.freeform.utils.PermissionUtils
 import com.sunshine.freeform.utils.BackendSelector
+import com.sunshine.freeform.utils.StandaloneFreeform
 import com.sunshine.freeform.utils.XposedCapability
 import rikka.sui.Sui
 
@@ -97,13 +98,15 @@ class HomeFragment : Fragment(), View.OnClickListener {
     private fun checkShizukuPermission(): Boolean {
         val shizuku = BackendSelector.allowsShizuku() && MiFreeform.me?.isRunning?.value == true
         val xposed = BackendSelector.allowsXposed() && XposedCapability.isAvailable()
-        val result = shizuku || xposed
+        val rom = BackendSelector.allowsRomFreeform() && StandaloneFreeform.isSupported(requireContext())
+        val result = shizuku || xposed || rom
         if (result) {
             binding.infoShizukuBg.setBackgroundColor(resources.getColor(R.color.success_color))
             binding.imageViewShizukuService.setImageDrawable(AppCompatResources.getDrawable(requireContext(), R.drawable.ic_done))
             binding.textViewShizukuServiceInfo.text = when {
                 shizuku -> if (Sui.isSui()) getString(R.string.sui_start_short) else getString(R.string.shizuku_start_short)
                 xposed -> getString(R.string.xposed_start_short)
+                rom -> getString(R.string.standalone_rom_freeform)
                 else -> getString(R.string.standalone_mode)
             }
         } else {

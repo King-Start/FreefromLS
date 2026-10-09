@@ -212,8 +212,15 @@
     <string name="focus_timer_done">Selesai! 🎉</string>
     <string name="perf_overlay_ram_format">RAM: %1$d/%2$dMB</string>
     <string name="backend_mode_title">Backend freeform</string>
-    <string name="backend_mode_summary">Otomatis mencoba Shizuku/Sui dulu, lalu LSPosed/Xposed, lalu taskbar layar penuh biasa. Pilih salah satu untuk memaksanya.</string>
+    <string name="backend_mode_summary">Otomatis mencoba Shizuku/Sui dulu, lalu LSPosed/Xposed, lalu freeform bawaan ROM (perlu \"Aktifkan jendela freeform\" di Opsi pengembang), lalu layar penuh biasa. Pilih salah satu untuk memaksanya.</string>
     <string name="xposed_start_short">Jembatan LSPosed/Xposed aktif</string>
-    <string name="standalone_mode">Mode taskbar mandiri (tanpa Shizuku/LSPosed)</string>
+    <string name="standalone_mode">Hanya layar penuh (tanpa Shizuku/LSPosed/freeform ROM)</string>
     <string name="xposed_description">Jembatan freeform LSPosed/Xposed opsional dan hook tampilan sistem</string>
+    <string name="standalone_rom_freeform">Mode freeform bawaan ROM (tanpa Shizuku/LSPosed)</string>
+    <string name="standalone_window_size_title">Ukuran jendela freeform ROM</string>
+    <string name="standalone_window_size_summary">Ukuran/posisi jendela yang dipakai mode freeform bawaan ROM</string>
+    <string name="standalone_dev_options_title">Buka Opsi pengembang</string>
+    <string name="standalone_dev_options_summary">Aktifkan \"Aktifkan jendela freeform\" (dan \"Paksa aktivitas agar dapat diubah ukurannya\" pada sebagian ROM), lalu mulai ulang perangkat jika perlu. Hanya diperlukan untuk mode freeform bawaan ROM.</string>
+    <string name="standalone_freeform_supported">Freeform ROM tersedia di perangkat ini</string>
+    <string name="standalone_freeform_unsupported">Freeform ROM belum aktif. Aktifkan di Opsi pengembang</string>
 </resources>

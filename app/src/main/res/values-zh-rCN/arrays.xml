@@ -40,9 +40,17 @@
     </array>
 
     <string-array name="backend_mode">
-        <item>自动（Shizuku → LSPosed → 全屏）</item>
+        <item>自动（Shizuku → LSPosed → 系统自由窗口 → 全屏）</item>
         <item>仅 Shizuku/Sui</item>
         <item>仅 LSPosed/Xposed</item>
-        <item>不使用小窗（仅任务栏/全屏）</item>
+        <item>系统自带自由窗口（无需 Shizuku/LSPosed）</item>
+        <item>不使用小窗（仅全屏）</item>
+    </string-array>
+    <string-array name="standalone_window_size">
+        <item>标准</item>
+        <item>大</item>
+        <item>左半/上半</item>
+        <item>右半/下半</item>
+        <item>最大化</item>
     </string-array>
 </resources>
