@@ -236,4 +236,8 @@
     <string name="taskbar_need_overlay">Please allow the overlay permission first</string>
     <string name="pref_lock_resize_ratio_title">Lock aspect ratio when resizing</string>
     <string name="pref_lock_resize_ratio_summary">Off: drag the bottom corners to resize freely (width and height change independently, the app re-fits to the new size). On: keep the original proportions.</string>
+    <string name="pref_taskbar_auto_hide_title">Auto-hide after opening an app</string>
+    <string name="pref_taskbar_auto_hide_summary">Collapse the taskbar into a small tab on the screen edge after you open an app. Tap the tab to bring it back; drag it up or down to move it.</string>
+    <string name="taskbar_hide_side_title">Hide side</string>
+    <string name="taskbar_hide_side_summary">Screen edge where the taskbar tab appears when hidden</string>
 </resources>

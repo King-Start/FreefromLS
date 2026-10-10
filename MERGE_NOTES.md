@@ -128,3 +128,10 @@ Terinspirasi farmerbb/Taskbar (Apache-2.0): tanpa Shizuku/LSPosed, aplikasi dibu
   kanan-atas (handle kiri) menjadi jangkar; jendela dijaga tetap di dalam layar.
 - `lock_resize_ratio` default MATI (bebas). Dinyalakan = rasio dikunci (isi hanya diskalakan).
 - Memindahkan jendela tetap langsung (tanpa bayangan).
+
+## Taskbar bisa disembunyikan ke tepi layar (putaran 11)
+
+- Tombol panah di ujung bilah (atau otomatis setelah membuka aplikasi) menciutkan taskbar menjadi tab kecil
+  di tepi layar; ketuk tab untuk memunculkan lagi, seret naik/turun untuk memindahkan tab.
+- Pengaturan baru: `taskbar_auto_hide` (default aktif) dan `taskbar_hide_side` (kanan/kiri).
+  Status tersembunyi dan posisi tab disimpan di `taskbar_state`.

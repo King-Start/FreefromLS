@@ -91,4 +91,12 @@
         <item>0</item>
         <item>1</item>
     </integer-array>
+    <string-array name="taskbar_hide_side">
+        <item>Right</item>
+        <item>Left</item>
+    </string-array>
+    <integer-array name="taskbar_hide_side_value">
+        <item>0</item>
+        <item>1</item>
+    </integer-array>
 </resources>

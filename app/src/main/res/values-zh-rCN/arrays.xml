@@ -57,4 +57,8 @@
         <item>底部</item>
         <item>顶部</item>
     </string-array>
+    <string-array name="taskbar_hide_side">
+        <item>右侧</item>
+        <item>左侧</item>
+    </string-array>
 </resources>

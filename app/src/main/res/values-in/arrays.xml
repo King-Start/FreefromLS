@@ -28,4 +28,8 @@
         <item>Bawah</item>
         <item>Atas</item>
     </string-array>
+    <string-array name="taskbar_hide_side">
+        <item>Kanan</item>
+        <item>Kiri</item>
+    </string-array>
 </resources>

@@ -221,4 +221,8 @@
     <string name="taskbar_need_overlay">Izinkan izin overlay terlebih dahulu</string>
     <string name="pref_lock_resize_ratio_title">Kunci rasio saat mengubah ukuran</string>
     <string name="pref_lock_resize_ratio_summary">Mati: tarik kedua sudut bawah untuk mengubah ukuran bebas (lebar dan tinggi berubah sendiri-sendiri, aplikasi menyesuaikan ukuran baru). Hidup: proporsi asli dipertahankan.</string>
+    <string name="pref_taskbar_auto_hide_title">Sembunyikan otomatis setelah membuka aplikasi</string>
+    <string name="pref_taskbar_auto_hide_summary">Taskbar menciut menjadi tab kecil di tepi layar setelah kamu membuka aplikasi. Ketuk tab untuk memunculkannya lagi, seret naik atau turun untuk memindahkannya.</string>
+    <string name="taskbar_hide_side_title">Sisi persembunyian</string>
+    <string name="taskbar_hide_side_summary">Tepi layar tempat tab taskbar muncul saat disembunyikan</string>
 </resources>

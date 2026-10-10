@@ -405,6 +405,22 @@
             app:entryValues="@array/taskbar_position_value"
             app:iconSpaceReserved="false"/>
 
+        <SwitchPreference
+            android:key="taskbar_auto_hide"
+            android:title="@string/pref_taskbar_auto_hide_title"
+            android:summary="@string/pref_taskbar_auto_hide_summary"
+            app:defaultValue="true"
+            app:iconSpaceReserved="false"/>
+
+        <com.sunshine.freeform.ui.view.IntegerSimpleMenuPreference
+            android:key="taskbar_hide_side"
+            android:title="@string/taskbar_hide_side_title"
+            android:summary="@string/taskbar_hide_side_summary"
+            app:defaultValue="0"
+            app:entries="@array/taskbar_hide_side"
+            app:entryValues="@array/taskbar_hide_side_value"
+            app:iconSpaceReserved="false"/>
+
         <SeekBarPreference
             android:key="taskbar_max_recents"
             android:title="@string/taskbar_max_recents_title"

@@ -57,6 +57,8 @@ class TaskbarService : Service(), SharedPreferences.OnSharedPreferenceChangeList
     private var appItems: List<AppItem> = emptyList()
     private var lastRecentKey = ""
     private var destroyed = false
+    private var collapsed = false
+    private var tabView: View? = null
 
     private val refreshTask = object : Runnable {
         override fun run() {
@@ -76,7 +78,8 @@ class TaskbarService : Service(), SharedPreferences.OnSharedPreferenceChangeList
             stopSelf()
             return
         }
-        showBar()
+        collapsed = getSharedPreferences(STATE_PREFS, Context.MODE_PRIVATE).getBoolean(KEY_COLLAPSED, false)
+        if (collapsed) showTab() else showBar()
         loadApps()
         handler.post(refreshTask)
     }
@@ -89,17 +92,19 @@ class TaskbarService : Service(), SharedPreferences.OnSharedPreferenceChangeList
         runCatching { sp.unregisterOnSharedPreferenceChangeListener(this) }
         hideMenu()
         removeBar()
+        removeTab()
         executor.shutdownNow()
         super.onDestroy()
     }
 
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
-        if (key == KEY_POSITION || key == KEY_MAX_RECENTS) {
+        if (key == KEY_POSITION || key == KEY_MAX_RECENTS || key == KEY_HIDE_SIDE) {
             handler.post {
                 if (destroyed) return@post
                 hideMenu()
                 removeBar()
-                showBar()
+                removeTab()
+                if (collapsed) showTab() else showBar()
             }
         }
     }
@@ -137,9 +142,19 @@ class TaskbarService : Service(), SharedPreferences.OnSharedPreferenceChangeList
             textSize = 14f
             setTextColor(0xFFFFFFFF.toInt())
         }
+        val hideLeft = sp.getInt(KEY_HIDE_SIDE, 0) == 1
+        val hide = TextView(this).apply {
+            text = if (hideLeft) "\u2039" else "\u203A"
+            textSize = 26f
+            setTextColor(0xFFFFFFFF.toInt())
+            gravity = Gravity.CENTER
+            layoutParams = LinearLayout.LayoutParams(dp(40), dp(BAR_HEIGHT_DP))
+            setOnClickListener { collapse() }
+        }
         bar.addView(start)
         bar.addView(scroll)
         bar.addView(clock)
+        bar.addView(hide)
 
         val top = sp.getInt(KEY_POSITION, 0) == 1
         val params = WindowManager.LayoutParams(
@@ -167,6 +182,99 @@ class TaskbarService : Service(), SharedPreferences.OnSharedPreferenceChangeList
         barView = null
         recentsRow = null
         lastRecentKey = ""
+    }
+
+    // ===== SEMBUNYI KE TEPI LAYAR =====
+    private fun collapse() {
+        if (destroyed) return
+        collapsed = true
+        getSharedPreferences(STATE_PREFS, Context.MODE_PRIVATE).edit().putBoolean(KEY_COLLAPSED, true).apply()
+        hideMenu()
+        removeBar()
+        showTab()
+    }
+
+    private fun expand() {
+        if (destroyed) return
+        collapsed = false
+        getSharedPreferences(STATE_PREFS, Context.MODE_PRIVATE).edit().putBoolean(KEY_COLLAPSED, false).apply()
+        removeTab()
+        showBar()
+        refreshRecents()
+    }
+
+    private fun showTab() {
+        removeTab()
+        val left = sp.getInt(KEY_HIDE_SIDE, 0) == 1
+        val r = dp(14).toFloat()
+        val tab = TextView(this).apply {
+            text = if (left) "\u203A" else "\u2039"
+            textSize = 22f
+            setTextColor(0xFFFFFFFF.toInt())
+            gravity = Gravity.CENTER
+            background = GradientDrawable().apply {
+                setColor(0xD91F2328.toInt())
+                cornerRadii = if (left) {
+                    floatArrayOf(0f, 0f, r, r, r, r, 0f, 0f)
+                } else {
+                    floatArrayOf(r, r, 0f, 0f, 0f, 0f, r, r)
+                }
+            }
+        }
+        val screenH = resources.displayMetrics.heightPixels
+        val tabH = dp(88)
+        val state = getSharedPreferences(STATE_PREFS, Context.MODE_PRIVATE)
+        val savedY = state.getInt(KEY_TAB_Y, -1)
+        val params = WindowManager.LayoutParams(
+            dp(24),
+            tabH,
+            WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
+                WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
+            PixelFormat.TRANSLUCENT
+        ).apply {
+            gravity = (if (left) Gravity.START else Gravity.END) or Gravity.TOP
+            x = 0
+            y = if (savedY >= 0) savedY.coerceIn(0, screenH - tabH) else (screenH - tabH) / 2
+        }
+        var downY = 0f
+        var startY = 0
+        var moved = false
+        tab.setOnTouchListener { v, event ->
+            when (event.actionMasked) {
+                MotionEvent.ACTION_DOWN -> {
+                    downY = event.rawY
+                    startY = params.y
+                    moved = false
+                    true
+                }
+                MotionEvent.ACTION_MOVE -> {
+                    val dy = event.rawY - downY
+                    if (kotlin.math.abs(dy) > dp(8)) moved = true
+                    if (moved) {
+                        params.y = (startY + dy).toInt().coerceIn(0, screenH - tabH)
+                        runCatching { windowManager.updateViewLayout(v, params) }
+                    }
+                    true
+                }
+                MotionEvent.ACTION_UP -> {
+                    if (moved) {
+                        state.edit().putInt(KEY_TAB_Y, params.y).apply()
+                    } else {
+                        expand()
+                    }
+                    true
+                }
+                else -> false
+            }
+        }
+        runCatching { windowManager.addView(tab, params) }.onSuccess { tabView = tab }
+    }
+
+    private fun removeTab() {
+        tabView?.let { runCatching { windowManager.removeView(it) } }
+        tabView = null
     }
 
     // ===== START MENU =====
@@ -387,6 +495,7 @@ class TaskbarService : Service(), SharedPreferences.OnSharedPreferenceChangeList
         AppLauncher.launch(this, pkg, target, 0)
         recordLaunch(this, pkg, target)
         hideMenu()
+        if (sp.getBoolean(KEY_AUTO_HIDE, true)) collapse()
         handler.postDelayed({
             lastRecentKey = ""
             refreshRecents()
@@ -397,9 +506,13 @@ class TaskbarService : Service(), SharedPreferences.OnSharedPreferenceChangeList
         const val KEY_ENABLED = "enable_taskbar"
         const val KEY_POSITION = "taskbar_position"
         const val KEY_MAX_RECENTS = "taskbar_max_recents"
+        const val KEY_AUTO_HIDE = "taskbar_auto_hide"
+        const val KEY_HIDE_SIDE = "taskbar_hide_side"
         private const val BAR_HEIGHT_DP = 48
         private const val STATE_PREFS = "taskbar_state"
         private const val KEY_RECENT_LIST = "recent_list"
+        private const val KEY_COLLAPSED = "collapsed"
+        private const val KEY_TAB_Y = "tab_y"
 
         fun setEnabled(context: Context, enabled: Boolean) {
             val intent = Intent(context, TaskbarService::class.java)
