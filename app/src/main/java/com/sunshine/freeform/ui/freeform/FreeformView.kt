@@ -918,6 +918,7 @@ class FreeformView(
 
     private fun onScreenOrientationChanged() {
         initFloatViewSize()
+        updateResizeHandlesVisibility()
 
         refreshFreeformSize()
 
@@ -2328,7 +2329,23 @@ class FreeformView(
         binding.rightScale.background = pill()
         binding.leftScale.setOnTouchListener(ScaleHandleTouchListener(false))
         binding.rightScale.setOnTouchListener(ScaleHandleTouchListener(true))
+        updateResizeHandlesVisibility()
     }
+
+    private fun updateResizeHandlesVisibility() {
+        val vis = if (FreeformHelper.screenIsPortrait(screenRotation)) View.VISIBLE else View.GONE
+        binding.leftScale.visibility = vis
+        binding.rightScale.visibility = vis
+    }
+
+    private fun freeResizeEnabled(): Boolean =
+        !viewModel.getBooleanSp("lock_resize_ratio", false) &&
+            FreeformHelper.screenIsPortrait(screenRotation) &&
+            virtualDisplayRotation != VIRTUAL_DISPLAY_ROTATION_LANDSCAPE
+
+    /** Ukuran layout asli (tanpa skala) kartu; dipakai agar ukuran tampak selalu tepat. */
+    private fun localWidth(): Int = binding.freeformRoot.width.takeIf { it > 0 } ?: rootWidth
+    private fun localHeight(): Int = binding.freeformRoot.height.takeIf { it > 0 } ?: rootHeight
 
     @Suppress("DEPRECATION")
     private fun screenSize(): IntArray {
@@ -2406,12 +2423,12 @@ class FreeformView(
         val startW = start.width()
         val startH = start.height()
         if (startW <= 0 || startH <= 0) return
-        val maxW = kotlin.math.max(sw, startW)
-        val maxH = kotlin.math.max(sh, startH)
+        val maxW = kotlin.math.max(kotlin.math.min(sw, localWidth()), startW)
+        val maxH = kotlin.math.max(kotlin.math.min(sh, localHeight()), startH)
 
         var w = (if (rightSide) startW + totalDx else startW - totalDx).toInt()
         var h = (startH + totalDy).toInt()
-        if (viewModel.getBooleanSp("lock_resize_ratio", false)) {
+        if (!freeResizeEnabled()) {
             val keep = startW.toFloat() / startH.toFloat()
             if (w / h.coerceAtLeast(1).toFloat() > keep) h = (w / keep).toInt() else w = (h * keep).toInt()
             val sMin = kotlin.math.max(minW / startW.toFloat(), minH / startH.toFloat())
@@ -2444,13 +2461,15 @@ class FreeformView(
         val h = resizeRect.height()
         if (w <= 0 || h <= 0 || resizeRect == resizeStartRect) return
         val s = screenSize()
-        freeformWidth = kotlin.math.min(w, rootWidth)
-        freeformHeight = kotlin.math.min(h, rootHeight)
+        val lw = localWidth()
+        val lh = localHeight()
+        freeformWidth = kotlin.math.min(w, lw)
+        freeformHeight = kotlin.math.min(h, lh)
         windowLayoutParams.x = resizeRect.centerX() - s[0] / 2
         windowLayoutParams.y = resizeRect.centerY() - s[1] / 2
-        mScaleX = freeformWidth / rootWidth.toFloat()
-        mScaleY = freeformHeight / rootHeight.toFloat()
-        if (!viewModel.getBooleanSp("lock_resize_ratio", false)) {
+        mScaleX = freeformWidth / lw.toFloat()
+        mScaleY = freeformHeight / lh.toFloat()
+        if (freeResizeEnabled()) {
             // Bentuk bebas: virtual display mengikuti bentuk jendela agar isi aplikasi menyesuaikan
             freeformScreenWidth = (freeformWidth - cardWidthMargin).roundToInt().coerceAtLeast(1)
             freeformScreenHeight = (freeformHeight - cardHeightMargin).roundToInt().coerceAtLeast(1)
@@ -2480,6 +2499,9 @@ class FreeformView(
         @SuppressLint("ClickableViewAccessibility")
         override fun onTouch(v: View, event: MotionEvent): Boolean {
             if (isFloating || isHidden || isSuspend) return false
+            // Geometri mode miring berbeda (bilah pindah ke sisi, pusat dihitung lain): resize sudut
+            // hanya untuk mode tegak.
+            if (!FreeformHelper.screenIsPortrait(screenRotation)) return false
             when (event.actionMasked) {
                 MotionEvent.ACTION_DOWN -> {
                     downX = event.rawX

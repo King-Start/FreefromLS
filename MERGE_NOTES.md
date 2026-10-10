@@ -135,3 +135,16 @@ Terinspirasi farmerbb/Taskbar (Apache-2.0): tanpa Shizuku/LSPosed, aplikasi dibu
   di tepi layar; ketuk tab untuk memunculkan lagi, seret naik/turun untuk memindahkan tab.
 - Pengaturan baru: `taskbar_auto_hide` (default aktif) dan `taskbar_hide_side` (kanan/kiri).
   Status tersembunyi dan posisi tab disimpan di `taskbar_state`.
+
+## Perbaikan resize di landscape (putaran 12)
+
+- Di landscape, root jendela berbentuk portrait (rootWidth/rootHeight ditukar) sehingga batas yang dipakai
+  bayangan (lebar/tinggi layar) tidak sama dengan yang bisa diterapkan; jendela jadi tidak sesuai bayangan.
+  Batas kini memakai ukuran layout asli kartu (`localWidth/localHeight`), dan skala dihitung dari ukuran itu.
+- Bentuk bebas (reflow virtual display) kini hanya aktif di portrait. Di landscape resize memakai skala
+  proporsional (rasio terkunci, tanpa mengubah virtual display) seperti v3.1 yang stabil.
+
+- Perbaikan (putaran 12): handle resize sudut dinonaktifkan dan disembunyikan di mode layar miring.
+  Geometri mode miring di `FreeformView` berbeda (margin bilah pindah ke sisi kanan, pusat jendela dari
+  `genCenterLocation()`), sedangkan perhitungan posisi/ukuran resize sudut mengasumsikan mode tegak.
+  Di screenshot, jendela membesar melewati layar dan isinya bertumpuk saat miring.
