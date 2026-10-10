@@ -839,6 +839,7 @@ class FreeformView(
         }.onFailure {
             runCatching {
                 windowManager.removeViewImmediate(backgroundView)
+                hideResizePreview()
                 windowManager.removeViewImmediate(binding.root)
             }
 
@@ -2024,6 +2025,7 @@ class FreeformView(
         unregisterPhoneCallReceiver()
 
         runCatching {
+            hideResizePreview()
             windowManager.removeViewImmediate(binding.root)
             windowManager.removeViewImmediate(backgroundView)
         }
@@ -2308,9 +2310,10 @@ class FreeformView(
         }
     }
 
-    // ===== RESIZE DENGAN MENARIK SUDUT KIRI/KANAN BAWAH =====
-    private val RESIZE_MIN_SCALE = 0.3f
-    private val RESIZE_MAX_SCALE = 0.9f
+    // ===== RESIZE: tarik sudut kiri/kanan bawah. Ada bayangan target, diterapkan saat dilepas =====
+    private var resizePreview: View? = null
+    private val resizeStartRect = android.graphics.Rect()
+    private val resizeRect = android.graphics.Rect()
 
     private fun setupCornerResizeHandles() {
         val density = context.resources.displayMetrics.density
@@ -2327,71 +2330,134 @@ class FreeformView(
         binding.rightScale.setOnTouchListener(ScaleHandleTouchListener(true))
     }
 
-    /**
-     * Sama dengan resizeFreeForm() di freeform_update/FreeFormHookWindow: tarik ke luar = membesar,
-     * ke dalam = mengecil, rasio lebar-tinggi dikunci, batas 30%-90% dari layar, dan jendela
-     * berubah ukuran mengelilingi titik tengahnya (tidak digeser).
-     */
-    private fun resizeFromCorner(movedX: Float, movedY: Float, rightSide: Boolean) {
-        if (isFloating || rootWidth <= 0 || rootHeight <= 0 || freeformHeight <= 0) return
-        if (!viewModel.getBooleanSp("lock_resize_ratio", true)) {
-            // Resize bebas: lebar dan tinggi berubah sendiri-sendiri (rasio tidak dikunci)
-            var fw = if (rightSide) freeformWidth + movedX else freeformWidth - movedX
-            var fh = freeformHeight + movedY
-            fw = fw.coerceIn(
-                kotlin.math.min(RESIZE_MIN_SCALE * rootWidth, freeformWidth.toFloat()),
-                kotlin.math.max(RESIZE_MAX_SCALE * rootWidth, freeformWidth.toFloat())
-            )
-            fh = fh.coerceIn(
-                kotlin.math.min(RESIZE_MIN_SCALE * rootHeight, freeformHeight.toFloat()),
-                kotlin.math.max(RESIZE_MAX_SCALE * rootHeight, freeformHeight.toFloat())
-            )
-            val nw = fw.roundToInt()
-            val nh = fh.roundToInt()
-            if (nw == freeformWidth && nh == freeformHeight) return
-            freeformWidth = nw
-            freeformHeight = nh
-            mScaleX = freeformWidth / rootWidth.toFloat()
-            mScaleY = freeformHeight / rootHeight.toFloat()
-            isZoomOut = true
-            return
-        }
-        val keep = freeformWidth.toFloat() / freeformHeight.toFloat()
-        var w = if (rightSide) freeformWidth + movedX else freeformWidth - movedX
-        var h = freeformHeight + movedY
-        // Jaga rasio: sisi yang lebih kecil ikut menyesuaikan
-        if (w / h > keep) h = w / keep else w = h * keep
-
-        val minW = kotlin.math.max(RESIZE_MIN_SCALE * rootWidth, RESIZE_MIN_SCALE * rootHeight * keep)
-        val maxW = kotlin.math.min(RESIZE_MAX_SCALE * rootWidth, RESIZE_MAX_SCALE * rootHeight * keep)
-        // Jangan melompat bila ukuran awal sudah di luar batas
-        val lower = kotlin.math.min(minW, freeformWidth.toFloat())
-        val upper = kotlin.math.max(maxW, freeformWidth.toFloat())
-        w = w.coerceIn(lower, upper)
-        h = w / keep
-
-        val newW = w.roundToInt()
-        val newH = h.roundToInt()
-        if (newW == freeformWidth && newH == freeformHeight) return
-        freeformWidth = newW
-        freeformHeight = newH
-        mScaleX = freeformWidth / rootWidth.toFloat()
-        mScaleY = freeformHeight / rootHeight.toFloat()
-        isZoomOut = true
+    @Suppress("DEPRECATION")
+    private fun screenSize(): IntArray {
+        val dm = android.util.DisplayMetrics()
+        defaultDisplay.getRealMetrics(dm)
+        return intArrayOf(dm.widthPixels, dm.heightPixels)
     }
 
-    private fun commitCornerResize() {
-        if (!isZoomOut) return
-        if (!viewModel.getBooleanSp("lock_resize_ratio", true)) {
-            // Rasio bebas: virtual display mengikuti bentuk jendela agar isi tidak melar
-            freeformScreenWidth = (freeformWidth - cardWidthMargin).roundToInt()
-            freeformScreenHeight = (freeformHeight - cardHeightMargin).roundToInt()
+    /** Kotak jendela yang tampak sekarang (pusat = pusat layar + offset window). */
+    private fun currentVisualRect(): android.graphics.Rect {
+        val s = screenSize()
+        val cx = s[0] / 2 + windowLayoutParams.x
+        val cy = s[1] / 2 + windowLayoutParams.y
+        return android.graphics.Rect(
+            cx - freeformWidth / 2, cy - freeformHeight / 2,
+            cx + freeformWidth / 2, cy + freeformHeight / 2
+        )
+    }
+
+    private fun showResizePreview() {
+        hideResizePreview()
+        val density = context.resources.displayMetrics.density
+        val v = View(context).apply {
+            background = android.graphics.drawable.GradientDrawable().apply {
+                setColor(0x335C6BFF)
+                setStroke((2 * density).toInt(), 0xFF5C5CE0.toInt())
+                cornerRadius = 12f * density
+            }
+        }
+        val lp = WindowManager.LayoutParams(
+            1, 1, windowLayoutParams.type,
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or
+                WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS or
+                WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
+            PixelFormat.TRANSLUCENT
+        ).apply { gravity = android.view.Gravity.TOP or android.view.Gravity.START }
+        runCatching {
+            windowManager.addView(v, lp)
+            resizePreview = v
+        }
+    }
+
+    private fun updateResizePreview(r: android.graphics.Rect) {
+        val v = resizePreview ?: return
+        val lp = v.layoutParams as? WindowManager.LayoutParams ?: return
+        lp.x = r.left
+        lp.y = r.top
+        lp.width = r.width()
+        lp.height = r.height()
+        runCatching { windowManager.updateViewLayout(v, lp) }
+    }
+
+    private fun hideResizePreview() {
+        resizePreview?.let { runCatching { windowManager.removeViewImmediate(it) } }
+        resizePreview = null
+    }
+
+    private fun startResize() {
+        resizeStartRect.set(currentVisualRect())
+        resizeRect.set(resizeStartRect)
+        showResizePreview()
+        updateResizePreview(resizeRect)
+    }
+
+    /** Bentuk bebas (lebar dan tinggi sendiri-sendiri) sampai selebar/setinggi layar. */
+    private fun updateResize(totalDx: Float, totalDy: Float, rightSide: Boolean) {
+        val s = screenSize()
+        val sw = s[0]
+        val sh = s[1]
+        val start = resizeStartRect
+        val density = context.resources.displayMetrics.density
+        val minW = (110 * density).toInt()
+        val minH = (110 * density).toInt()
+        val startW = start.width()
+        val startH = start.height()
+        if (startW <= 0 || startH <= 0) return
+        val maxW = kotlin.math.max(sw, startW)
+        val maxH = kotlin.math.max(sh, startH)
+
+        var w = (if (rightSide) startW + totalDx else startW - totalDx).toInt()
+        var h = (startH + totalDy).toInt()
+        if (viewModel.getBooleanSp("lock_resize_ratio", false)) {
+            val keep = startW.toFloat() / startH.toFloat()
+            if (w / h.coerceAtLeast(1).toFloat() > keep) h = (w / keep).toInt() else w = (h * keep).toInt()
+            val sMin = kotlin.math.max(minW / startW.toFloat(), minH / startH.toFloat())
+            val sMax = kotlin.math.min(maxW / startW.toFloat(), maxH / startH.toFloat())
+            val scale = (w / startW.toFloat()).coerceIn(sMin, kotlin.math.max(sMin, sMax))
+            w = (startW * scale).toInt()
+            h = (startH * scale).toInt()
+        } else {
+            w = w.coerceIn(minW, maxW)
+            h = h.coerceIn(minH, maxH)
+        }
+
+        // Jangkar: kiri-atas (handle kanan) atau kanan-atas (handle kiri)
+        val left = if (rightSide) start.left else start.right - w
+        resizeRect.set(left, start.top, left + w, start.top + h)
+        // Tetap di dalam layar
+        var dx = 0
+        var dy = 0
+        if (resizeRect.right > sw) dx = sw - resizeRect.right
+        if (resizeRect.left + dx < 0) dx = -resizeRect.left
+        if (resizeRect.bottom > sh) dy = sh - resizeRect.bottom
+        if (resizeRect.top + dy < 0) dy = -resizeRect.top
+        resizeRect.offset(dx, dy)
+        updateResizePreview(resizeRect)
+    }
+
+    private fun commitResize() {
+        hideResizePreview()
+        val w = resizeRect.width()
+        val h = resizeRect.height()
+        if (w <= 0 || h <= 0 || resizeRect == resizeStartRect) return
+        val s = screenSize()
+        freeformWidth = kotlin.math.min(w, rootWidth)
+        freeformHeight = kotlin.math.min(h, rootHeight)
+        windowLayoutParams.x = resizeRect.centerX() - s[0] / 2
+        windowLayoutParams.y = resizeRect.centerY() - s[1] / 2
+        mScaleX = freeformWidth / rootWidth.toFloat()
+        mScaleY = freeformHeight / rootHeight.toFloat()
+        if (!viewModel.getBooleanSp("lock_resize_ratio", false)) {
+            // Bentuk bebas: virtual display mengikuti bentuk jendela agar isi aplikasi menyesuaikan
+            freeformScreenWidth = (freeformWidth - cardWidthMargin).roundToInt().coerceAtLeast(1)
+            freeformScreenHeight = (freeformHeight - cardHeightMargin).roundToInt().coerceAtLeast(1)
             resizeVirtualDisplay()
             refreshTouchScale()
         }
-        // Seperti freeform_update: resolusi virtual display TIDAK diubah, isi aplikasi hanya
-        // diskalakan (tanpa reflow), sehingga resize stabil dan tidak membuat aplikasi memuat ulang.
-        // Koordinat sentuh tetap benar karena sentuhan dipetakan lewat transformasi view.
+        runCatching { windowManager.updateViewLayout(binding.root, windowLayoutParams) }
         refreshActionScale()
         if (rememberFreeformSize) {
             if (FreeformHelper.screenIsPortrait(screenRotation)) {
@@ -2407,8 +2473,8 @@ class FreeformView(
     }
 
     private inner class ScaleHandleTouchListener(private val rightSide: Boolean) : View.OnTouchListener {
-        private var lastRawX = 0f
-        private var lastRawY = 0f
+        private var downX = 0f
+        private var downY = 0f
         private var active = false
 
         @SuppressLint("ClickableViewAccessibility")
@@ -2416,25 +2482,22 @@ class FreeformView(
             if (isFloating || isHidden || isSuspend) return false
             when (event.actionMasked) {
                 MotionEvent.ACTION_DOWN -> {
-                    lastRawX = event.rawX
-                    lastRawY = event.rawY
+                    downX = event.rawX
+                    downY = event.rawY
                     active = true
                     v.parent?.requestDisallowInterceptTouchEvent(true)
+                    startResize()
                     return true
                 }
                 MotionEvent.ACTION_MOVE -> {
                     if (!active) return false
-                    val dx = event.rawX - lastRawX
-                    val dy = event.rawY - lastRawY
-                    lastRawX = event.rawX
-                    lastRawY = event.rawY
-                    resizeFromCorner(dx, dy, rightSide)
+                    updateResize(event.rawX - downX, event.rawY - downY, rightSide)
                     return true
                 }
                 MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
                     if (active) {
                         active = false
-                        commitCornerResize()
+                        if (event.actionMasked == MotionEvent.ACTION_UP) commitResize() else hideResizePreview()
                     }
                     return true
                 }

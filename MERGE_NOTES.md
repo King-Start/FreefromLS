@@ -116,3 +116,15 @@ Terinspirasi farmerbb/Taskbar (Apache-2.0): tanpa Shizuku/LSPosed, aplikasi dibu
   menciut ke pojok kiri-atas di dalam kartu (terlihat di screenshot). Buffer kini ikut diubah.
 - `lock_resize_ratio` kini default AKTIF (rasio dikunci, isi hanya diskalakan = perilaku v3.1 yang stabil
   dan sama dengan freeform_update). Mode rasio bebas tetap tersedia dengan mematikan pengaturan itu.
+
+## Resize bebas ala eswd (putaran 10)
+
+- Menarik sudut kiri/kanan bawah kini menampilkan **bayangan target** (kotak transparan berbingkai biru);
+  ukuran/posisi jendela baru berubah saat jari dilepas. Selama menarik jendela asli tidak disentuh, jadi
+  tidak ada kedipan atau isi yang melar.
+- Bentuk bebas (lebar dan tinggi sendiri-sendiri): bisa lebar-pendek, tinggi-sempit, sekecil ~110dp,
+  sampai selebar/setinggi layar. Saat dilepas, virtual display mengikuti bentuk jendela sehingga aplikasi
+  menata ulang (mis. Chrome tampil dalam tata letak lebar). Sudut kiri-atas (handle kanan) atau
+  kanan-atas (handle kiri) menjadi jangkar; jendela dijaga tetap di dalam layar.
+- `lock_resize_ratio` default MATI (bebas). Dinyalakan = rasio dikunci (isi hanya diskalakan).
+- Memindahkan jendela tetap langsung (tanpa bayangan).
