@@ -73,6 +73,21 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent" />
 
+        <!-- Handle resize: tarik sudut kiri/kanan bawah untuk memperbesar/memperkecil -->
+        <View
+            android:id="@+id/leftScale"
+            android:layout_width="56dp"
+            android:layout_height="@dimen/bottom_bar_height_flyme"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <View
+            android:id="@+id/rightScale"
+            android:layout_width="56dp"
+            android:layout_height="@dimen/bottom_bar_height_flyme"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

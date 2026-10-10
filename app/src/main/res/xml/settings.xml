@@ -102,7 +102,6 @@
             android:max="100"
             app:showSeekBarValue="true"/>
 
-
         <SeekBarPreference
             android:key="float_trigger_ratio"
             android:title="@string/pref_float_trigger_ratio_title"
@@ -213,13 +212,6 @@
             android:key="enable_swipe_forward"
             android:title="@string/pref_enable_swipe_forward_title"
             android:summary="@string/pref_enable_swipe_forward_summary"
-            app:defaultValue="false"
-            app:iconSpaceReserved="false"/>
-
-        <SwitchPreference
-            android:key="enable_pinch_resize"
-            android:title="@string/pref_enable_pinch_resize_title"
-            android:summary="@string/pref_enable_pinch_resize_summary"
             app:defaultValue="false"
             app:iconSpaceReserved="false"/>
 
@@ -350,47 +342,6 @@
             app:defaultValue="true"
             app:iconSpaceReserved="false"/>
 
-        <SwitchPreference
-            android:key="enable_quick_notes"
-            android:title="@string/pref_enable_quick_notes_title"
-            android:summary="@string/pref_enable_quick_notes_summary"
-            app:defaultValue="false"
-            app:iconSpaceReserved="false"/>
-
-        <SwitchPreference
-            android:key="enable_focus_timer"
-            android:title="@string/pref_enable_focus_timer_title"
-            android:summary="@string/pref_enable_focus_timer_summary"
-            app:defaultValue="false"
-            app:iconSpaceReserved="false"/>
-
-        <SeekBarPreference
-            android:key="focus_timer_minutes"
-            android:title="@string/pref_focus_timer_minutes_title"
-            android:summary="@string/pref_focus_timer_minutes_summary"
-            app:iconSpaceReserved="false"
-            app:defaultValue="25"
-            app:min="5"
-            android:max="90"
-            app:showSeekBarValue="true"/>
-
-        <SwitchPreference
-            android:key="show_perf_overlay"
-            android:title="@string/pref_show_perf_overlay_title"
-            android:summary="@string/pref_show_perf_overlay_summary"
-            app:defaultValue="false"
-            app:iconSpaceReserved="false"/>
-
-        <SeekBarPreference
-            android:key="perf_overlay_interval"
-            android:title="@string/pref_perf_overlay_interval_title"
-            android:summary="@string/pref_perf_overlay_interval_summary"
-            app:iconSpaceReserved="false"
-            app:defaultValue="2"
-            app:min="1"
-            android:max="10"
-            app:showSeekBarValue="true"/>
-
     </PreferenceCategory>
 
     <PreferenceCategory
@@ -424,6 +375,44 @@
             app:min="0"
             android:max="10"
             app:showSeekBarValue="true"/>
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="@string/category_taskbar"
+        app:iconSpaceReserved="false">
+
+        <SwitchPreference
+            android:key="enable_taskbar"
+            android:title="@string/pref_enable_taskbar_title"
+            android:summary="@string/pref_enable_taskbar_summary"
+            app:defaultValue="false"
+            app:iconSpaceReserved="false"/>
+
+        <com.sunshine.freeform.ui.view.IntegerSimpleMenuPreference
+            android:key="taskbar_position"
+            android:title="@string/taskbar_position_title"
+            android:summary="@string/taskbar_position_summary"
+            app:defaultValue="0"
+            app:entries="@array/taskbar_position"
+            app:entryValues="@array/taskbar_position_value"
+            app:iconSpaceReserved="false"/>
+
+        <SeekBarPreference
+            android:key="taskbar_max_recents"
+            android:title="@string/taskbar_max_recents_title"
+            android:summary="@string/taskbar_max_recents_summary"
+            app:iconSpaceReserved="false"
+            app:defaultValue="6"
+            app:min="3"
+            android:max="10"
+            app:showSeekBarValue="true"/>
+
+        <Preference
+            android:key="taskbar_usage_access"
+            android:title="@string/taskbar_usage_access_title"
+            android:summary="@string/taskbar_usage_access_summary"
+            app:iconSpaceReserved="false"/>
 
     </PreferenceCategory>
 

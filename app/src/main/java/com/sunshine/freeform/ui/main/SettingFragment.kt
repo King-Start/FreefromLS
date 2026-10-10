@@ -22,6 +22,7 @@ import com.google.android.material.textfield.TextInputLayout
 import com.sunshine.freeform.R
 import com.sunshine.freeform.app.MiFreeform
 import com.sunshine.freeform.service.ForegroundService
+import com.sunshine.freeform.service.TaskbarService
 import com.sunshine.freeform.service.KeepAliveService
 import com.sunshine.freeform.ui.choose_apps.ChooseAppsActivity
 import com.sunshine.freeform.ui.freeform.FreeformView
@@ -66,6 +67,8 @@ class SettingFragment : PreferenceFragmentCompat(), Preference.OnPreferenceClick
         findPreference<Preference>(RESET_OVERLAY_SETTING)!!.onPreferenceClickListener = this
         findPreference<Preference>(RESET_ALL_WINDOWS)!!.onPreferenceClickListener = this
         findPreference<Preference>("standalone_open_developer_options")?.onPreferenceClickListener = this
+        findPreference<Preference>("taskbar_usage_access")?.onPreferenceClickListener = this
+        findPreference<Preference>("enable_taskbar")?.onPreferenceChangeListener = this
         findPreference<SwitchPreference>(SHOW_FLOATING)!!.onPreferenceChangeListener = this
         findPreference<SwitchPreference>(NOTIFY_FREEFORM)!!.onPreferenceChangeListener = this
         findPreference<SwitchPreference>(AUTO_MINIMIZE_ON_CALL)!!.onPreferenceChangeListener = this
@@ -77,6 +80,13 @@ class SettingFragment : PreferenceFragmentCompat(), Preference.OnPreferenceClick
 
     override fun onPreferenceClick(preference: Preference): Boolean {
         when(preference.key) {
+            "taskbar_usage_access" -> {
+                try {
+                    startActivity(Intent(android.provider.Settings.ACTION_USAGE_ACCESS_SETTINGS))
+                } catch (e: Exception) {
+                    startActivity(Intent(android.provider.Settings.ACTION_SETTINGS))
+                }
+            }
             "standalone_open_developer_options" -> {
                 val ctx = requireContext()
                 val supported = StandaloneFreeform.isSupported(ctx)
@@ -168,6 +178,15 @@ class SettingFragment : PreferenceFragmentCompat(), Preference.OnPreferenceClick
                         }
                     }
                 }
+            }
+            "enable_taskbar" -> {
+                val enable = newValue as Boolean
+                if (enable && !android.provider.Settings.canDrawOverlays(requireContext())) {
+                    Toast.makeText(requireContext(), getString(R.string.taskbar_need_overlay), Toast.LENGTH_SHORT).show()
+                    startActivity(Intent(requireActivity(), PermissionActivity::class.java))
+                    return false
+                }
+                TaskbarService.setEnabled(requireContext(), enable)
             }
             NOTIFY_FREEFORM -> {
                 PermissionUtils.checkPostNotificationPermission(requireActivity())

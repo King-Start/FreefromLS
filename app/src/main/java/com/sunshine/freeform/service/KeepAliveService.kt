@@ -108,6 +108,7 @@ class KeepAliveService : AccessibilityService(), SharedPreferences.OnSharedPrefe
     private fun initKeepAlive() {
         sp = getSharedPreferences(MiFreeform.APP_SETTINGS_NAME, Context.MODE_PRIVATE)
         sp.registerOnSharedPreferenceChangeListener(this)
+        runCatching { TaskbarService.sync(this) }
 
         //切换为无障碍模式
         if (sp.getInt("service_type", SERVICE_TYPE) != SERVICE_TYPE) {

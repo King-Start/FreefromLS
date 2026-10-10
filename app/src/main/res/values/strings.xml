@@ -183,8 +183,6 @@
     <string name="pref_enable_swipe_home_summary">Swipe up from bottom edge to go home</string>
     <string name="pref_enable_swipe_forward_title">Swipe left = Forward</string>
     <string name="pref_enable_swipe_forward_summary">Swipe from right edge to go forward</string>
-    <string name="pref_enable_pinch_resize_title">Pinch to resize</string>
-    <string name="pref_enable_pinch_resize_summary">Use two fingers to resize floating window</string>
     <string name="pref_enable_shake_minimize_title">Shake to minimize</string>
     <string name="pref_enable_shake_minimize_summary">Shake device to minimize floating window</string>
     <string name="pref_gesture_edge_width_title">Gesture edge width</string>
@@ -207,14 +205,6 @@
     <string name="pref_tap_outside_to_close_summary">Tap outside floating window to close it. Turn off to prevent accidental close</string>
     <string name="pref_snap_to_edge_title">Snap to edge</string>
     <string name="pref_snap_to_edge_summary">Window automatically snaps to screen edge when released</string>
-    <string name="pref_enable_quick_notes_title">Quick notes</string>
-    <string name="pref_enable_quick_notes_summary">Show a sticky note beside floating window</string>
-    <string name="pref_enable_focus_timer_title">Focus timer (Pomodoro)</string>
-    <string name="pref_enable_focus_timer_summary">Focus timer above floating window. Tap to start/stop</string>
-    <string name="pref_focus_timer_minutes_title">Focus timer duration</string>
-    <string name="pref_focus_timer_minutes_summary">Length of the focus timer in minutes</string>
-    <string name="pref_show_perf_overlay_title">Performance overlay</string>
-    <string name="pref_show_perf_overlay_summary">Show RAM usage on floating window</string>
     <string name="category_gesture">Gesture</string>
     <string name="category_appearance">Appearance</string>
     <string name="category_performance">Performance</string>
@@ -225,10 +215,6 @@
     <string name="pref_float_trigger_ratio_summary">Shrink the window below this percent of its size to turn it into a floating bubble</string>
     <string name="pref_full_trigger_ratio_title">Fullscreen trigger threshold</string>
     <string name="pref_full_trigger_ratio_summary">Enlarge the window above this percent of its size to open the app in full screen</string>
-    <string name="pref_perf_overlay_interval_title">Performance overlay refresh interval</string>
-    <string name="pref_perf_overlay_interval_summary">How often (seconds) the RAM info refreshes</string>
-    <string name="focus_timer_done">Done! 🎉</string>
-    <string name="perf_overlay_ram_format">RAM: %1$d/%2$dMB</string>
     <string name="backend_mode_title">Freeform backend</string>
     <string name="backend_mode_summary">Automatic tries Shizuku/Sui first, then LSPosed/Xposed, then the ROM\'s built-in freeform (needs \"Enable freeform windows\" in Developer options), then normal fullscreen. Choose one to force it.</string>
     <string name="standalone_rom_freeform">ROM built-in freeform mode (no Shizuku/LSPosed)</string>
@@ -238,4 +224,14 @@
     <string name="standalone_dev_options_summary">Turn on \"Enable freeform windows\" (and \"Force activities to be resizable\" on some ROMs), then restart the device if needed. Only required for the ROM built-in freeform mode.</string>
     <string name="standalone_freeform_supported">ROM freeform is available on this device</string>
     <string name="standalone_freeform_unsupported">ROM freeform is not enabled yet. Turn it on in Developer options</string>
+    <string name="category_taskbar">Taskbar</string>
+    <string name="pref_enable_taskbar_title">Taskbar</string>
+    <string name="pref_enable_taskbar_summary">Show a taskbar with a start menu and recent apps. Apps open through the selected backend (Shizuku, LSPosed, or ROM freeform)</string>
+    <string name="taskbar_position_title">Taskbar position</string>
+    <string name="taskbar_position_summary">Show the taskbar at the bottom or top of the screen</string>
+    <string name="taskbar_max_recents_title">Recent apps shown</string>
+    <string name="taskbar_max_recents_summary">Maximum number of recent apps on the taskbar</string>
+    <string name="taskbar_usage_access_title">Usage access</string>
+    <string name="taskbar_usage_access_summary">Allow usage access so the taskbar can list recently used apps. Without it, only apps launched from Mi-Freeform appear</string>
+    <string name="taskbar_need_overlay">Please allow the overlay permission first</string>
 </resources>

@@ -360,27 +360,6 @@ class FreeformView(
                         unregisterPhoneCallReceiver()
                     }
                 }
-                "enable_quick_notes" -> {
-                    if (sharedPreferences.getBoolean(key, false)) {
-                        initQuickNotesOverlay()
-                    } else {
-                        removeQuickNotesOverlay()
-                    }
-                }
-                "enable_focus_timer" -> {
-                    if (sharedPreferences.getBoolean(key, false)) {
-                        initFocusTimer()
-                    } else {
-                        removeFocusTimer()
-                    }
-                }
-                "show_perf_overlay" -> {
-                    if (sharedPreferences.getBoolean(key, false)) {
-                        initPerfOverlay()
-                    } else {
-                        removePerfOverlay()
-                    }
-                }
                 "enable_shake_minimize" -> {
                     enableShakeMinimize = sharedPreferences.getBoolean(key, false)
                     if (enableShakeMinimize) {
@@ -397,9 +376,6 @@ class FreeformView(
                 }
                 "enable_swipe_forward" -> {
                     enableSwipeForward = sharedPreferences.getBoolean(key, false)
-                }
-                "enable_pinch_resize" -> {
-                    enablePinchResize = sharedPreferences.getBoolean(key, false)
                 }
                 "remember_freeform_size" -> {
                     rememberFreeformSize = sharedPreferences.getBoolean(key, true)
@@ -436,10 +412,6 @@ class FreeformView(
                 }
                 "gesture_min_distance" -> {
                     gestureMinDistanceDp = sharedPreferences.getInt(key, 100).coerceIn(50, 300).toFloat()
-                }
-                "focus_timer_minutes" -> {
-                    focusMinutes = sharedPreferences.getInt(key, 25).coerceIn(5, 90)
-                    if (!isFocusTimerRunning) focusTimerView?.text = String.format("%02d:00", focusMinutes)
                 }
                 // Key lain (animation_speed, swipe_back_indicator_alpha, posisi/ukuran yang
                 // diingat, dll.) dibaca saat dibutuhkan; JANGAN panggil initConfig() di sini
@@ -509,7 +481,6 @@ class FreeformView(
         // Gesture tambahan
         enableSwipeHome = viewModel.getBooleanSp("enable_swipe_home", false)
         enableSwipeForward = viewModel.getBooleanSp("enable_swipe_forward", false)
-        enablePinchResize = viewModel.getBooleanSp("enable_pinch_resize", false)
         enableShakeMinimize = viewModel.getBooleanSp("enable_shake_minimize", false)
 
         // Tampilan
@@ -525,7 +496,6 @@ class FreeformView(
         shakeThreshold = viewModel.getIntSp("shake_threshold", 12).coerceIn(6, 30).toFloat()
         gestureEdgeDp = viewModel.getIntSp("gesture_edge_width", 60).coerceIn(20, 120).toFloat()
         gestureMinDistanceDp = viewModel.getIntSp("gesture_min_distance", 100).coerceIn(50, 300).toFloat()
-        focusMinutes = viewModel.getIntSp("focus_timer_minutes", 25).coerceIn(5, 90)
     }
 
     /**
@@ -562,6 +532,7 @@ class FreeformView(
         binding.root.setOnTouchListener(this)
         binding.bottomBar.middleView.setOnTouchListener(this@FreeformView)
         binding.bottomBar.sideView.setOnTouchListener(this@FreeformView)
+        setupCornerResizeHandles()
 
         val topBarTouchListener = TopBarTouchListener()
         binding.topBar.root.setOnTouchListener(topBarTouchListener)
@@ -808,17 +779,6 @@ class FreeformView(
         if (cornerRadiusValue > 0) {
             binding.cardRoot.radius = cornerRadiusValue
         }
-
-        // Setup overlay tambahan
-        if (viewModel.getBooleanSp("enable_quick_notes", false)) {
-            initQuickNotesOverlay()
-        }
-
-        if (viewModel.getBooleanSp("enable_focus_timer", false)) {
-            initFocusTimer()
-        }
-
-        initPerfOverlay()
 
         // Setup shake sensor
         if (enableShakeMinimize) {
@@ -1745,7 +1705,6 @@ class FreeformView(
     // Gesture tambahan
     private var enableSwipeHome = false
     private var enableSwipeForward = false
-    private var enablePinchResize = false
     private var enableShakeMinimize = false
 
     // Tampilan
@@ -1756,12 +1715,6 @@ class FreeformView(
     private var autoCloseScreenOff = false
     private var autoMinimizeOnCall = false
     private var isWindowLocked = false
-
-    // Pinch to resize
-    private var pinchStartDistance = 0f
-    private var pinchStartWidth = 0
-    private var pinchStartHeight = 0
-    private var isPinching = false
 
     // Shake to minimize
     private var sensorManager: android.hardware.SensorManager? = null
@@ -2067,15 +2020,6 @@ class FreeformView(
         // Cleanup phone call receiver
         unregisterPhoneCallReceiver()
 
-        // Cleanup quick notes
-        removeQuickNotesOverlay()
-
-        // Cleanup focus timer
-        removeFocusTimer()
-
-        // Cleanup perf overlay
-        removePerfOverlay()
-
         runCatching {
             windowManager.removeViewImmediate(binding.root)
             windowManager.removeViewImmediate(backgroundView)
@@ -2227,105 +2171,6 @@ class FreeformView(
         return false
     }
 
-    // ===== QUICK NOTES =====
-    private var quickNotesView: View? = null
-
-    private fun initQuickNotesOverlay() {
-        removeQuickNotesOverlay()
-        val editText = android.widget.EditText(context).apply {
-            hint = "Quick notes..."
-            setBackgroundColor(0xEE1A1A1A.toInt())
-            setTextColor(android.graphics.Color.WHITE)
-            setHintTextColor(0xFF888888.toInt())
-            setPadding(16, 16, 16, 16)
-            textSize = 12f
-        }
-        quickNotesView = editText
-        val lp = WindowManager.LayoutParams().apply {
-            width = (200 * context.resources.displayMetrics.density).toInt()
-            height = (120 * context.resources.displayMetrics.density).toInt()
-            type = if (Settings.canDrawOverlays(context))
-                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
-            else WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY
-            flags = WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
-                    WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
-            format = PixelFormat.TRANSLUCENT
-            x = windowLayoutParams.x + windowLayoutParams.width + 10
-            y = windowLayoutParams.y
-        }
-        runCatching { windowManager.addView(quickNotesView, lp) }
-    }
-
-    private fun removeQuickNotesOverlay() {
-        runCatching { quickNotesView?.let { windowManager.removeView(it) } }
-        quickNotesView = null
-    }
-
-    // ===== FOCUS TIMER =====
-    private var focusTimerView: android.widget.TextView? = null
-    private var focusTimerJob: kotlinx.coroutines.Job? = null
-    private var focusMinutes = 25
-    private var focusTimeSeconds = 25 * 60
-    private var isFocusTimerRunning = false
-
-    private fun initFocusTimer() {
-        removeFocusTimer()
-        val tv = android.widget.TextView(context).apply {
-            text = String.format("%02d:00", focusMinutes)
-            setTextColor(android.graphics.Color.WHITE)
-            textSize = 14f
-            setBackgroundColor(0xCC000000.toInt())
-            setPadding(16, 8, 16, 8)
-            setOnClickListener { toggleFocusTimer() }
-        }
-        focusTimerView = tv
-        val lp = WindowManager.LayoutParams().apply {
-            width = WindowManager.LayoutParams.WRAP_CONTENT
-            height = WindowManager.LayoutParams.WRAP_CONTENT
-            type = if (Settings.canDrawOverlays(context))
-                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
-            else WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY
-            flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
-                    WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
-            format = PixelFormat.TRANSLUCENT
-            x = windowLayoutParams.x
-            y = windowLayoutParams.y - 80
-        }
-        runCatching { windowManager.addView(focusTimerView, lp) }
-    }
-
-    private fun removeFocusTimer() {
-        focusTimerJob?.cancel()
-        focusTimerJob = null
-        runCatching { focusTimerView?.let { windowManager.removeView(it) } }
-        focusTimerView = null
-    }
-
-    private fun toggleFocusTimer() {
-        if (isFocusTimerRunning) {
-            focusTimerJob?.cancel()
-            isFocusTimerRunning = false
-        } else {
-            isFocusTimerRunning = true
-            focusTimeSeconds = focusMinutes * 60
-            focusTimerJob = scope.launch {
-                while (focusTimeSeconds > 0 && isFocusTimerRunning) {
-                    val min = focusTimeSeconds / 60
-                    val sec = focusTimeSeconds % 60
-                    withContext(Dispatchers.Main) {
-                        focusTimerView?.text = String.format("%02d:%02d", min, sec)
-                    }
-                    kotlinx.coroutines.delay(1000)
-                    focusTimeSeconds--
-                }
-                withContext(Dispatchers.Main) {
-                    focusTimerView?.text = context.getString(R.string.focus_timer_done)
-                    isFocusTimerRunning = false
-                }
-            }
-        }
-    }
-
     // ===== SNAP TO EDGE =====
     private fun snapToEdge() {
         if (!viewModel.getBooleanSp("snap_to_edge", true)) return
@@ -2346,57 +2191,6 @@ class FreeformView(
             }
             start()
         }
-    }
-
-    // ===== PERFORMANCE OVERLAY =====
-    private var perfOverlayView: android.widget.TextView? = null
-    private var perfOverlayJob: kotlinx.coroutines.Job? = null
-
-    private fun initPerfOverlay() {
-        if (!viewModel.getBooleanSp("show_perf_overlay", false)) {
-            removePerfOverlay()
-            return
-        }
-        removePerfOverlay()
-        val tv = android.widget.TextView(context).apply {
-            setTextColor(android.graphics.Color.GREEN)
-            textSize = 10f
-            setBackgroundColor(0x88000000.toInt())
-            setPadding(8, 4, 8, 4)
-        }
-        perfOverlayView = tv
-        val lp = WindowManager.LayoutParams().apply {
-            width = WindowManager.LayoutParams.WRAP_CONTENT
-            height = WindowManager.LayoutParams.WRAP_CONTENT
-            type = if (Settings.canDrawOverlays(context))
-                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
-            else WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY
-            flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
-                    WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or
-                    WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
-            format = PixelFormat.TRANSLUCENT
-            x = windowLayoutParams.x + windowLayoutParams.width - 100
-            y = windowLayoutParams.y
-        }
-        runCatching { windowManager.addView(perfOverlayView, lp) }
-        perfOverlayJob = scope.launch {
-            val runtime = Runtime.getRuntime()
-            while (isActive) {
-                val usedMem = (runtime.totalMemory() - runtime.freeMemory()) / 1024 / 1024
-                val totalMem = runtime.totalMemory() / 1024 / 1024
-                withContext(Dispatchers.Main) {
-                    perfOverlayView?.text = context.getString(R.string.perf_overlay_ram_format, usedMem, totalMem)
-                }
-                kotlinx.coroutines.delay(viewModel.getIntSp("perf_overlay_interval", 2).coerceIn(1, 10) * 1000L)
-            }
-        }
-    }
-
-    private fun removePerfOverlay() {
-        perfOverlayJob?.cancel()
-        perfOverlayJob = null
-        runCatching { perfOverlayView?.let { windowManager.removeView(it) } }
-        perfOverlayView = null
     }
 
     // Swipe dari bawah → home
@@ -2511,70 +2305,101 @@ class FreeformView(
         }
     }
 
-    // Pinch to resize
-    private fun getPinchDistance(event: MotionEvent): Float {
-        val dx = event.getX(0) - event.getX(1)
-        val dy = event.getY(0) - event.getY(1)
-        return kotlin.math.sqrt((dx * dx + dy * dy).toDouble()).toFloat()
+    // ===== RESIZE DENGAN MENARIK SUDUT KIRI/KANAN BAWAH =====
+    private fun setupCornerResizeHandles() {
+        val density = context.resources.displayMetrics.density
+        fun pill(): android.graphics.drawable.Drawable {
+            val shape = android.graphics.drawable.GradientDrawable().apply {
+                cornerRadius = 8f * density
+                setColor(0x99FFFFFF.toInt())
+            }
+            return android.graphics.drawable.InsetDrawable(shape, (18 * density).toInt(), (16 * density).toInt(), (18 * density).toInt(), (16 * density).toInt())
+        }
+        binding.leftScale.background = pill()
+        binding.rightScale.background = pill()
+        binding.leftScale.setOnTouchListener(ScaleHandleTouchListener(false))
+        binding.rightScale.setOnTouchListener(ScaleHandleTouchListener(true))
     }
 
-    private fun handlePinchResize(event: MotionEvent): Boolean {
-        if (!enablePinchResize || isFloating) return false
-        when (event.actionMasked) {
-            MotionEvent.ACTION_POINTER_DOWN -> {
-                if (event.pointerCount == 2) {
-                    pinchStartDistance = getPinchDistance(event)
-                    if (pinchStartDistance <= 0f) return false
-                    pinchStartWidth = freeformWidth
-                    pinchStartHeight = freeformHeight
-                    isPinching = true
-                }
+    private fun commitCornerResize() {
+        if (!isZoomOut) return
+        freeformScreenWidth = (freeformWidth - cardWidthMargin).roundToInt()
+        freeformScreenHeight = (freeformHeight - cardHeightMargin).roundToInt()
+        resizeVirtualDisplay()
+        refreshTouchScale()
+        refreshActionScale()
+        if (rememberFreeformSize) {
+            if (FreeformHelper.screenIsPortrait(screenRotation)) {
+                savedWidthPortrait = freeformWidth
+                savedHeightPortrait = freeformHeight
+            } else {
+                savedWidthLandscape = freeformWidth
+                savedHeightLandscape = freeformHeight
             }
-            MotionEvent.ACTION_MOVE -> {
-                if (isPinching && event.pointerCount == 2) {
-                    val currentDistance = getPinchDistance(event)
-                    val scale = currentDistance / pinchStartDistance
-                    val newWidth = (pinchStartWidth * scale).roundToInt()
-                    val newHeight = (pinchStartHeight * scale).roundToInt()
-                    if (newWidth in minFreeformWidth..maxFreeformWidth &&
-                        newHeight in minFreeformHeight..maxFreeformHeight) {
-                        freeformWidth = newWidth
-                        freeformHeight = newHeight
-                        mScaleX = freeformWidth / rootWidth.toFloat()
-                        mScaleY = freeformHeight / rootHeight.toFloat()
+            rememberCurrentSize()
+        }
+        isZoomOut = false
+    }
+
+    private inner class ScaleHandleTouchListener(private val rightSide: Boolean) : View.OnTouchListener {
+        private var lastRawX = 0f
+        private var lastRawY = 0f
+        private var active = false
+
+        @SuppressLint("ClickableViewAccessibility")
+        override fun onTouch(v: View, event: MotionEvent): Boolean {
+            if (isFloating || isHidden || isSuspend) return false
+            when (event.actionMasked) {
+                MotionEvent.ACTION_DOWN -> {
+                    lastRawX = event.rawX
+                    lastRawY = event.rawY
+                    active = true
+                    v.parent?.requestDisallowInterceptTouchEvent(true)
+                    return true
+                }
+                MotionEvent.ACTION_MOVE -> {
+                    if (!active) return false
+                    val dx = event.rawX - lastRawX
+                    val dy = event.rawY - lastRawY
+                    lastRawX = event.rawX
+                    lastRawY = event.rawY
+                    val oldW = freeformWidth
+                    val oldH = freeformHeight
+                    // Tarik keluar/ke bawah = membesar, ke dalam/ke atas = mengecil
+                    val outward = if (rightSide) dx else -dx
+                    if (kotlin.math.abs(outward) >= kotlin.math.abs(dy)) {
+                        handleToFloatScale(outward, 0f)
+                    } else {
+                        handleToFloatScale(0f, dy)
+                    }
+                    val dw = freeformWidth - oldW
+                    val dh = freeformHeight - oldH
+                    if (dw != 0 || dh != 0) {
+                        // Jangkar sudut berlawanan agar sudut yang ditarik mengikuti jari
+                        runCatching {
+                            windowManager.updateViewLayout(binding.root, windowLayoutParams.apply {
+                                x += if (rightSide) dw / 2 else -dw / 2
+                                y += dh / 2
+                            })
+                        }
+                    }
+                    return true
+                }
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                    if (active) {
+                        active = false
+                        commitCornerResize()
                     }
                     return true
                 }
             }
-            MotionEvent.ACTION_POINTER_UP -> {
-                if (isPinching) {
-                    isPinching = false
-                    // Apply resize ke VirtualDisplay
-                    freeformScreenWidth = (freeformWidth - cardWidthMargin).roundToInt()
-                    freeformScreenHeight = (freeformHeight - cardHeightMargin).roundToInt()
-                    resizeVirtualDisplay()
-                    
-                    // Simpan ukuran
-                    if (rememberFreeformSize) {
-                        if (FreeformHelper.screenIsPortrait(screenRotation)) {
-                            savedWidthPortrait = freeformWidth
-                            savedHeightPortrait = freeformHeight
-                        } else {
-                            savedWidthLandscape = freeformWidth
-                            savedHeightLandscape = freeformHeight
-                        }
-                        rememberCurrentSize()
-                    }
-                }
-            }
+            return false
         }
-        return false
     }
 
     private inner class TouchListener : View.OnTouchListener {
         @SuppressLint("ClickableViewAccessibility")
         override fun onTouch(v: View, event: MotionEvent): Boolean {
-            if (handlePinchResize(event)) return true
             if (handleSwipeBackGesture(event)) return true
             if (handleSwipeHomeGesture(event)) return true
             if (handleSwipeForwardGesture(event)) return true
@@ -2627,7 +2452,6 @@ class FreeformView(
     private inner class TouchListenerPreQ : View.OnTouchListener {
         @SuppressLint("ClickableViewAccessibility")
         override fun onTouch(v: View, event: MotionEvent): Boolean {
-            if (handlePinchResize(event)) return true
             if (handleSwipeBackGesture(event)) return true
             if (handleSwipeHomeGesture(event)) return true
             if (handleSwipeForwardGesture(event)) return true

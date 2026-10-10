@@ -24,4 +24,8 @@
         <item>Setengah kanan/bawah</item>
         <item>Maksimal</item>
     </string-array>
+    <string-array name="taskbar_position">
+        <item>Bawah</item>
+        <item>Atas</item>
+    </string-array>
 </resources>

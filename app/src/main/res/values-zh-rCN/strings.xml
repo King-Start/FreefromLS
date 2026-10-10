@@ -246,8 +246,6 @@
     <string name="pref_enable_swipe_home_summary">从底部边缘上滑返回桌面</string>
     <string name="pref_enable_swipe_forward_title">左滑前进</string>
     <string name="pref_enable_swipe_forward_summary">从右边缘滑动前进</string>
-    <string name="pref_enable_pinch_resize_title">双指缩放</string>
-    <string name="pref_enable_pinch_resize_summary">使用双指调整小窗大小</string>
     <string name="pref_enable_shake_minimize_title">摇一摇最小化</string>
     <string name="pref_enable_shake_minimize_summary">摇动设备以最小化小窗</string>
     <string name="pref_gesture_edge_width_title">手势边缘宽度</string>
@@ -270,14 +268,6 @@
     <string name="pref_tap_outside_to_close_summary">点击小窗外部将其关闭。关闭此项可防止误触关闭</string>
     <string name="pref_snap_to_edge_title">吸附边缘</string>
     <string name="pref_snap_to_edge_summary">松开后窗口自动吸附到屏幕边缘</string>
-    <string name="pref_enable_quick_notes_title">快速便签</string>
-    <string name="pref_enable_quick_notes_summary">在小窗旁显示便签</string>
-    <string name="pref_enable_focus_timer_title">专注计时器（番茄钟）</string>
-    <string name="pref_enable_focus_timer_summary">在小窗上方显示专注计时器，点击开始/停止</string>
-    <string name="pref_focus_timer_minutes_title">专注计时时长</string>
-    <string name="pref_focus_timer_minutes_summary">专注计时器的时长（分钟）</string>
-    <string name="pref_show_perf_overlay_title">性能浮层</string>
-    <string name="pref_show_perf_overlay_summary">在小窗上显示内存使用情况</string>
     <string name="category_gesture">手势</string>
     <string name="category_appearance">外观</string>
     <string name="category_performance">性能</string>
@@ -288,10 +278,6 @@
     <string name="pref_float_trigger_ratio_summary">将小窗缩小到原始大小的此百分比以下时变为悬浮球</string>
     <string name="pref_full_trigger_ratio_title">全屏触发比例</string>
     <string name="pref_full_trigger_ratio_summary">将小窗放大到原始大小的此百分比以上时转为全屏</string>
-    <string name="pref_perf_overlay_interval_title">性能浮层刷新间隔</string>
-    <string name="pref_perf_overlay_interval_summary">内存信息的刷新间隔（秒）</string>
-    <string name="focus_timer_done">完成！🎉</string>
-    <string name="perf_overlay_ram_format">RAM: %1$d/%2$dMB</string>
     <string name="backend_mode_title">小窗后端</string>
     <string name="backend_mode_summary">自动模式依次尝试 Shizuku/Sui、LSPosed/Xposed、系统自带自由窗口（需在开发者选项中开启“启用可自由调整的窗口”），最后使用普通全屏。选择其中一项可强制使用。</string>
     <string name="standalone_rom_freeform">系统自带自由窗口模式（无需 Shizuku/LSPosed）</string>
@@ -301,4 +287,14 @@
     <string name="standalone_dev_options_summary">开启“启用可自由调整的窗口”（部分系统还需开启“强制将活动设为可调整大小”），必要时重启设备。仅系统自带自由窗口模式需要。</string>
     <string name="standalone_freeform_supported">此设备支持系统自由窗口</string>
     <string name="standalone_freeform_unsupported">系统自由窗口尚未开启，请在开发者选项中打开</string>
+    <string name="category_taskbar">任务栏</string>
+    <string name="pref_enable_taskbar_title">任务栏</string>
+    <string name="pref_enable_taskbar_summary">显示带开始菜单和最近应用的任务栏。应用将通过所选后端（Shizuku、LSPosed 或系统自由窗口）打开</string>
+    <string name="taskbar_position_title">任务栏位置</string>
+    <string name="taskbar_position_summary">将任务栏显示在屏幕底部或顶部</string>
+    <string name="taskbar_max_recents_title">最近应用数量</string>
+    <string name="taskbar_max_recents_summary">任务栏上显示的最近应用最大数量</string>
+    <string name="taskbar_usage_access_title">使用情况访问权限</string>
+    <string name="taskbar_usage_access_summary">允许使用情况访问，任务栏才能列出最近使用的应用；未授权时只显示从 Mi-Freeform 启动的应用</string>
+    <string name="taskbar_need_overlay">请先授予悬浮窗权限</string>
 </resources>

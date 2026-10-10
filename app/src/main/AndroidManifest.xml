@@ -8,6 +8,7 @@
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS" tools:ignore="ProtectedPermissions" />
     <uses-permission android:name="android.permission.RECEIVE_USER_PRESENT" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES"
@@ -133,6 +134,11 @@
                 <action android:name="com.sunshine.freeform.ui.freeform.FreeformService"/>
             </intent-filter>
         </service>
+
+        <service
+            android:name=".service.TaskbarService"
+            android:enabled="true"
+            android:exported="false" />
 
         <service
             android:name=".service.ForegroundService"

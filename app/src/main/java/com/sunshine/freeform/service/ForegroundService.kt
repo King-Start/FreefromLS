@@ -109,6 +109,7 @@ class ForegroundService : Service(), SharedPreferences.OnSharedPreferenceChangeL
 
         sp = getSharedPreferences(MiFreeform.APP_SETTINGS_NAME, Context.MODE_PRIVATE)
         sp.registerOnSharedPreferenceChangeListener(this)
+        runCatching { TaskbarService.sync(this) }
         if (sp.getInt("service_type", KeepAliveService.SERVICE_TYPE) == SERVICE_TYPE) {
             // Rotation watching uses a Shizuku system binder when available,
             // but the taskbar fallback must still work without Shizuku.

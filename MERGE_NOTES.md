@@ -83,3 +83,14 @@ Terinspirasi farmerbb/Taskbar (Apache-2.0): tanpa Shizuku/LSPosed, aplikasi dibu
 - Syarat di perangkat: Opsi Pengembang -> "Enable freeform windows" (sebagian ROM juga
   "Force activities to be resizable"). Profil kerja/klon (userId != 0) tetap jatuh ke fullscreen.
 - Belum ada bilah taskbar overlay (start menu / aplikasi terbaru); itu tahap B.
+
+## Taskbar overlay + resize sudut, hapus fitur tak berfungsi (putaran 6)
+
+- Dihapus: cubit-untuk-ubah-ukuran, catatan cepat, timer fokus, overlay RAM (kode, pengaturan, string).
+- Resize: tarik sudut kiri/kanan bawah jendela freeform (handle `leftScale`/`rightScale` di
+  `view_freeform_flyme.xml`) untuk memperbesar/memperkecil; sudut berlawanan tetap di tempat.
+  Memakai jalur `handleToFloatScale` yang sudah ada, ukuran disimpan bila "ingat ukuran" aktif.
+- Taskbar (B): `service/TaskbarService.kt` (bilah overlay: tombol start, aplikasi terbaru, jam; start menu
+  grid semua aplikasi) + `utils/AppLauncher.kt` (membuka lewat broadcast ke API peluncur, jadi mengikuti
+  backend yang dipilih). Pengaturan: `enable_taskbar`, `taskbar_position`, `taskbar_max_recents`,
+  akses penggunaan. Aplikasi terbaru: UsageStats bila diizinkan + riwayat peluncuran dari taskbar.

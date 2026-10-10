@@ -166,8 +166,6 @@
     <string name="pref_enable_swipe_home_summary">Geser ke atas dari tepi bawah untuk ke beranda</string>
     <string name="pref_enable_swipe_forward_title">Geser ke kiri = Maju</string>
     <string name="pref_enable_swipe_forward_summary">Geser dari tepi kanan untuk maju</string>
-    <string name="pref_enable_pinch_resize_title">Cubit untuk ubah ukuran</string>
-    <string name="pref_enable_pinch_resize_summary">Gunakan dua jari untuk mengubah ukuran jendela mengambang</string>
     <string name="pref_enable_shake_minimize_title">Goyang untuk meminimalkan</string>
     <string name="pref_enable_shake_minimize_summary">Goyangkan perangkat untuk meminimalkan jendela mengambang</string>
     <string name="pref_gesture_edge_width_title">Lebar tepi gestur</string>
@@ -190,14 +188,6 @@
     <string name="pref_tap_outside_to_close_summary">Ketuk di luar jendela mengambang untuk menutupnya. Matikan agar tidak tertutup tak sengaja</string>
     <string name="pref_snap_to_edge_title">Tempel ke tepi</string>
     <string name="pref_snap_to_edge_summary">Jendela otomatis menempel ke tepi layar saat dilepas</string>
-    <string name="pref_enable_quick_notes_title">Catatan cepat</string>
-    <string name="pref_enable_quick_notes_summary">Tampilkan catatan tempel di samping jendela mengambang</string>
-    <string name="pref_enable_focus_timer_title">Timer fokus (Pomodoro)</string>
-    <string name="pref_enable_focus_timer_summary">Timer fokus di atas jendela mengambang. Ketuk untuk mulai/berhenti</string>
-    <string name="pref_focus_timer_minutes_title">Durasi timer fokus</string>
-    <string name="pref_focus_timer_minutes_summary">Lama timer fokus dalam menit</string>
-    <string name="pref_show_perf_overlay_title">Overlay performa</string>
-    <string name="pref_show_perf_overlay_summary">Tampilkan penggunaan RAM pada jendela mengambang</string>
     <string name="category_gesture">Gestur</string>
     <string name="category_appearance">Tampilan</string>
     <string name="category_performance">Performa</string>
@@ -207,10 +197,6 @@
     <string name="pref_float_trigger_ratio_summary">Kecilkan jendela di bawah persentase ukuran ini untuk mengubahnya menjadi gelembung mengambang</string>
     <string name="pref_full_trigger_ratio_title">Ambang pemicu layar penuh</string>
     <string name="pref_full_trigger_ratio_summary">Besarkan jendela di atas persentase ukuran ini untuk membuka aplikasi dalam layar penuh</string>
-    <string name="pref_perf_overlay_interval_title">Interval refresh overlay performa</string>
-    <string name="pref_perf_overlay_interval_summary">Seberapa sering (detik) info RAM diperbarui</string>
-    <string name="focus_timer_done">Selesai! 🎉</string>
-    <string name="perf_overlay_ram_format">RAM: %1$d/%2$dMB</string>
     <string name="backend_mode_title">Backend freeform</string>
     <string name="backend_mode_summary">Otomatis mencoba Shizuku/Sui dulu, lalu LSPosed/Xposed, lalu freeform bawaan ROM (perlu \"Aktifkan jendela freeform\" di Opsi pengembang), lalu layar penuh biasa. Pilih salah satu untuk memaksanya.</string>
     <string name="xposed_start_short">Jembatan LSPosed/Xposed aktif</string>
@@ -223,4 +209,14 @@
     <string name="standalone_dev_options_summary">Aktifkan \"Aktifkan jendela freeform\" (dan \"Paksa aktivitas agar dapat diubah ukurannya\" pada sebagian ROM), lalu mulai ulang perangkat jika perlu. Hanya diperlukan untuk mode freeform bawaan ROM.</string>
     <string name="standalone_freeform_supported">Freeform ROM tersedia di perangkat ini</string>
     <string name="standalone_freeform_unsupported">Freeform ROM belum aktif. Aktifkan di Opsi pengembang</string>
+    <string name="category_taskbar">Taskbar</string>
+    <string name="pref_enable_taskbar_title">Taskbar</string>
+    <string name="pref_enable_taskbar_summary">Tampilkan taskbar dengan menu start dan aplikasi terbaru. Aplikasi dibuka lewat backend terpilih (Shizuku, LSPosed, atau freeform ROM)</string>
+    <string name="taskbar_position_title">Posisi taskbar</string>
+    <string name="taskbar_position_summary">Tampilkan taskbar di bagian bawah atau atas layar</string>
+    <string name="taskbar_max_recents_title">Aplikasi terbaru yang ditampilkan</string>
+    <string name="taskbar_max_recents_summary">Jumlah maksimum aplikasi terbaru di taskbar</string>
+    <string name="taskbar_usage_access_title">Akses penggunaan</string>
+    <string name="taskbar_usage_access_summary">Izinkan akses penggunaan agar taskbar dapat menampilkan aplikasi yang baru dipakai. Tanpa izin, hanya aplikasi yang dibuka dari Mi-Freeform yang muncul</string>
+    <string name="taskbar_need_overlay">Izinkan izin overlay terlebih dahulu</string>
 </resources>
