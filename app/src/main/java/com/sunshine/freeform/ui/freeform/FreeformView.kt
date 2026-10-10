@@ -2324,4 +2324,404 @@ class FreeformView(
 
     /**
      * Mode tegak: dua handle di sudut kiri/kanan bawah (di atas bilah bawah).
-     * Mode miring: bilah pindah ke sisi kanan, jadi hanya s
+     * Mode miring: bilah pindah ke sisi kanan, jadi hanya satu handle vertikal di sudut kanan bawah
+     * (di dalam strip bilah) agar tidak menutupi isi aplikasi.
+     */
+    private fun updateResizeHandlesVisibility() {
+        val density = context.resources.displayMetrics.density
+        val portrait = FreeformHelper.screenIsPortrait(screenRotation)
+        fun pill(hDp: Int, vDp: Int): android.graphics.drawable.Drawable {
+            val shape = android.graphics.drawable.GradientDrawable().apply {
+                cornerRadius = 8f * density
+                setColor(0x99FFFFFF.toInt())
+            }
+            return android.graphics.drawable.InsetDrawable(
+                shape, (hDp * density).toInt(), (vDp * density).toInt(), (hDp * density).toInt(), (vDp * density).toInt()
+            )
+        }
+        val portraitBarHeight = context.resources.getDimensionPixelSize(R.dimen.bottom_bar_height_flyme)
+        (binding.rightScale.layoutParams as? ConstraintLayout.LayoutParams)?.let {
+            if (portrait) {
+                it.width = (64 * density).toInt()
+                it.height = portraitBarHeight
+            } else {
+                it.width = barHeight.roundToInt()
+                it.height = (64 * density).toInt()
+            }
+            binding.rightScale.layoutParams = it
+        }
+        binding.leftScale.background = pill(22, 16)
+        binding.rightScale.background = if (portrait) pill(22, 16) else pill(16, 22)
+        binding.leftScale.visibility = if (portrait) View.VISIBLE else View.GONE
+        binding.rightScale.visibility = View.VISIBLE
+    }
+
+    private fun freeResizeEnabled(): Boolean =
+        !viewModel.getBooleanSp("lock_resize_ratio", false) &&
+            virtualDisplayRotation != VIRTUAL_DISPLAY_ROTATION_LANDSCAPE
+
+    /** Ukuran layout asli (tanpa skala) kartu; dipakai agar ukuran tampak selalu tepat. */
+    private fun localWidth(): Int = binding.freeformRoot.width.takeIf { it > 0 } ?: rootWidth
+    private fun localHeight(): Int = binding.freeformRoot.height.takeIf { it > 0 } ?: rootHeight
+
+    @Suppress("DEPRECATION")
+    private fun screenSize(): IntArray {
+        val dm = android.util.DisplayMetrics()
+        defaultDisplay.getRealMetrics(dm)
+        return intArrayOf(dm.widthPixels, dm.heightPixels)
+    }
+
+    /** Kotak jendela yang tampak sekarang, dibaca dari tampilan (berlaku di mode tegak maupun miring). */
+    private fun currentVisualRect(): android.graphics.Rect {
+        val card = binding.freeformRoot
+        val loc = IntArray(2)
+        card.getLocationOnScreen(loc)
+        val w = (card.width * card.scaleX).roundToInt()
+        val h = (card.height * card.scaleY).roundToInt()
+        return android.graphics.Rect(loc[0], loc[1], loc[0] + w, loc[1] + h)
+    }
+
+    private fun showResizePreview() {
+        hideResizePreview()
+        val density = context.resources.displayMetrics.density
+        val v = View(context).apply {
+            background = android.graphics.drawable.GradientDrawable().apply {
+                setColor(0x335C6BFF)
+                setStroke((2 * density).toInt(), 0xFF5C5CE0.toInt())
+                cornerRadius = 12f * density
+            }
+        }
+        val lp = WindowManager.LayoutParams(
+            1, 1, windowLayoutParams.type,
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or
+                WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS or
+                WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
+            PixelFormat.TRANSLUCENT
+        ).apply { gravity = android.view.Gravity.TOP or android.view.Gravity.START }
+        runCatching {
+            windowManager.addView(v, lp)
+            resizePreview = v
+        }
+    }
+
+    private fun updateResizePreview(r: android.graphics.Rect) {
+        val v = resizePreview ?: return
+        val lp = v.layoutParams as? WindowManager.LayoutParams ?: return
+        lp.x = r.left
+        lp.y = r.top
+        lp.width = r.width()
+        lp.height = r.height()
+        runCatching { windowManager.updateViewLayout(v, lp) }
+    }
+
+    private fun hideResizePreview() {
+        resizePreview?.let { runCatching { windowManager.removeViewImmediate(it) } }
+        resizePreview = null
+    }
+
+    private fun startResize() {
+        resizeStartRect.set(currentVisualRect())
+        resizeRect.set(resizeStartRect)
+        showResizePreview()
+        updateResizePreview(resizeRect)
+    }
+
+    /** Bentuk bebas (lebar dan tinggi sendiri-sendiri) sampai selebar/setinggi layar. */
+    private fun updateResize(totalDx: Float, totalDy: Float, rightSide: Boolean) {
+        val s = screenSize()
+        val sw = s[0]
+        val sh = s[1]
+        val start = resizeStartRect
+        val density = context.resources.displayMetrics.density
+        val minW = (110 * density).toInt()
+        val minH = (110 * density).toInt()
+        val startW = start.width()
+        val startH = start.height()
+        if (startW <= 0 || startH <= 0) return
+        val maxW = kotlin.math.max(kotlin.math.min(sw, localWidth()), startW)
+        val maxH = kotlin.math.max(kotlin.math.min(sh, localHeight()), startH)
+
+        var w = (if (rightSide) startW + totalDx else startW - totalDx).toInt()
+        var h = (startH + totalDy).toInt()
+        if (!freeResizeEnabled()) {
+            val keep = startW.toFloat() / startH.toFloat()
+            if (w / h.coerceAtLeast(1).toFloat() > keep) h = (w / keep).toInt() else w = (h * keep).toInt()
+            val sMin = kotlin.math.max(minW / startW.toFloat(), minH / startH.toFloat())
+            val sMax = kotlin.math.min(maxW / startW.toFloat(), maxH / startH.toFloat())
+            val scale = (w / startW.toFloat()).coerceIn(sMin, kotlin.math.max(sMin, sMax))
+            w = (startW * scale).toInt()
+            h = (startH * scale).toInt()
+        } else {
+            w = w.coerceIn(minW, maxW)
+            h = h.coerceIn(minH, maxH)
+        }
+
+        // Jangkar: kiri-atas (handle kanan) atau kanan-atas (handle kiri)
+        val left = if (rightSide) start.left else start.right - w
+        resizeRect.set(left, start.top, left + w, start.top + h)
+        // Tetap di dalam layar
+        var dx = 0
+        var dy = 0
+        if (resizeRect.right > sw) dx = sw - resizeRect.right
+        if (resizeRect.left + dx < 0) dx = -resizeRect.left
+        if (resizeRect.bottom > sh) dy = sh - resizeRect.bottom
+        if (resizeRect.top + dy < 0) dy = -resizeRect.top
+        resizeRect.offset(dx, dy)
+        updateResizePreview(resizeRect)
+    }
+
+    private fun commitResize() {
+        hideResizePreview()
+        val w = resizeRect.width()
+        val h = resizeRect.height()
+        if (w <= 0 || h <= 0 || resizeRect == resizeStartRect) return
+        val lw = localWidth()
+        val lh = localHeight()
+        freeformWidth = kotlin.math.min(w, lw)
+        freeformHeight = kotlin.math.min(h, lh)
+        // Jendela diskalakan dari titik tengahnya; geser window sebesar selisih pusat visual
+        windowLayoutParams.x += resizeRect.centerX() - resizeStartRect.centerX()
+        windowLayoutParams.y += resizeRect.centerY() - resizeStartRect.centerY()
+        mScaleX = freeformWidth / lw.toFloat()
+        mScaleY = freeformHeight / lh.toFloat()
+        if (freeResizeEnabled()) {
+            // Bentuk bebas: virtual display mengikuti bentuk jendela agar isi aplikasi menyesuaikan
+            freeformScreenWidth = (freeformWidth - cardWidthMargin).roundToInt().coerceAtLeast(1)
+            freeformScreenHeight = (freeformHeight - cardHeightMargin).roundToInt().coerceAtLeast(1)
+            resizeVirtualDisplay()
+            refreshTouchScale()
+        }
+        runCatching { windowManager.updateViewLayout(binding.root, windowLayoutParams) }
+        refreshActionScale()
+        if (rememberFreeformSize) {
+            if (FreeformHelper.screenIsPortrait(screenRotation)) {
+                savedWidthPortrait = freeformWidth
+                savedHeightPortrait = freeformHeight
+            } else {
+                savedWidthLandscape = freeformWidth
+                savedHeightLandscape = freeformHeight
+            }
+            rememberCurrentSize()
+        }
+        isZoomOut = false
+    }
+
+    private inner class ScaleHandleTouchListener(private val rightSide: Boolean) : View.OnTouchListener {
+        private var downX = 0f
+        private var downY = 0f
+        private var active = false
+
+        @SuppressLint("ClickableViewAccessibility")
+        override fun onTouch(v: View, event: MotionEvent): Boolean {
+            if (isFloating || isHidden || isSuspend) return false
+            when (event.actionMasked) {
+                MotionEvent.ACTION_DOWN -> {
+                    downX = event.rawX
+                    downY = event.rawY
+                    active = true
+                    v.parent?.requestDisallowInterceptTouchEvent(true)
+                    startResize()
+                    return true
+                }
+                MotionEvent.ACTION_MOVE -> {
+                    if (!active) return false
+                    updateResize(event.rawX - downX, event.rawY - downY, rightSide)
+                    return true
+                }
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                    if (active) {
+                        active = false
+                        if (event.actionMasked == MotionEvent.ACTION_UP) commitResize() else hideResizePreview()
+                    }
+                    return true
+                }
+            }
+            return false
+        }
+    }
+
+    private inner class TouchListener : View.OnTouchListener {
+        @SuppressLint("ClickableViewAccessibility")
+        override fun onTouch(v: View, event: MotionEvent): Boolean {
+            if (handleSwipeBackGesture(event)) return true
+            if (handleSwipeHomeGesture(event)) return true
+            if (handleSwipeForwardGesture(event)) return true
+            handleTouch(event)
+            when(event.action) {
+                MotionEvent.ACTION_DOWN -> touchId = R.id.textureView
+                MotionEvent.ACTION_UP -> touchId = -1
+            }
+            return true
+        }
+
+        private fun handleTouch(event: MotionEvent) {
+            // MotionEvent.obtain expects non-null pointer arrays.  Nullable
+            // arrays work on some Kotlin/Android toolchains but fail to compile
+            // or crash when the platform method is resolved strictly.
+            val pointerCoords = Array(event.pointerCount) { MotionEvent.PointerCoords() }
+            val pointerProperties = Array(event.pointerCount) { MotionEvent.PointerProperties() }
+            for (i in 0 until event.pointerCount) {
+                val oldCoords = MotionEvent.PointerCoords()
+                event.getPointerCoords(i, oldCoords)
+                event.getPointerProperties(i, pointerProperties[i])
+                pointerCoords[i].apply {
+                    x = oldCoords.x / scaleX
+                    y = oldCoords.y / scaleY
+                    pressure = oldCoords.pressure
+                    size = oldCoords.size
+                    toolMajor = oldCoords.toolMajor
+                    toolMinor = oldCoords.toolMinor
+                    touchMajor = oldCoords.touchMajor
+                    touchMinor = oldCoords.touchMinor
+                    orientation = oldCoords.orientation
+                }
+            }
+            val newEvent = MotionEvent.obtain(
+                event.downTime, event.eventTime, event.action, event.pointerCount,
+                pointerProperties, pointerCoords, event.metaState, event.buttonState,
+                event.xPrecision, event.yPrecision, event.deviceId, event.edgeFlags,
+                event.source, event.flags
+            )
+            runCatching {
+                setDisplayIdMethod?.invoke(newEvent, virtualDisplay.display.displayId)
+                inputManager.injectInputEvent(newEvent, 0)
+            }.onFailure {
+                Log.w(TAG, "Failed to inject touch event", it)
+            }
+            newEvent.recycle()
+        }
+    }
+
+    private inner class TouchListenerPreQ : View.OnTouchListener {
+        @SuppressLint("ClickableViewAccessibility")
+        override fun onTouch(v: View, event: MotionEvent): Boolean {
+            if (handleSwipeBackGesture(event)) return true
+            if (handleSwipeHomeGesture(event)) return true
+            if (handleSwipeForwardGesture(event)) return true
+            handleTouch(event)
+            when(event.action) {
+                MotionEvent.ACTION_DOWN -> touchId = R.id.textureView
+                MotionEvent.ACTION_UP -> touchId = -1
+            }
+            return true
+        }
+
+        private fun handleTouch(event: MotionEvent) {
+            // MotionEvent.obtain expects non-null pointer arrays.  Nullable
+            // arrays work on some Kotlin/Android toolchains but fail to compile
+            // or crash when the platform method is resolved strictly.
+            val pointerCoords = Array(event.pointerCount) { MotionEvent.PointerCoords() }
+            val pointerProperties = Array(event.pointerCount) { MotionEvent.PointerProperties() }
+            for (i in 0 until event.pointerCount) {
+                val oldCoords = MotionEvent.PointerCoords()
+                event.getPointerCoords(i, oldCoords)
+                event.getPointerProperties(i, pointerProperties[i])
+                pointerCoords[i].apply {
+                    x = oldCoords.x / scaleX
+                    y = oldCoords.y / scaleY
+                    pressure = oldCoords.pressure
+                    size = oldCoords.size
+                    toolMajor = oldCoords.toolMajor
+                    toolMinor = oldCoords.toolMinor
+                    touchMajor = oldCoords.touchMajor
+                    touchMinor = oldCoords.touchMinor
+                    orientation = oldCoords.orientation
+                }
+            }
+            val newEvent = MotionEvent.obtain(
+                event.downTime, event.eventTime, event.action, event.pointerCount,
+                pointerProperties, pointerCoords, event.metaState, event.buttonState,
+                event.xPrecision, event.yPrecision, event.deviceId, event.edgeFlags,
+                event.source, event.flags
+            )
+            runCatching {
+                inputManager.injectInputEvent(newEvent, virtualDisplay.display.displayId)
+            }.onFailure {
+                Log.w(TAG, "Failed to inject pre-Q touch event", it)
+            }
+            newEvent.recycle()
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.Q)
+    private inner class MTaskStackListener : TaskStackListener() {
+        override fun onTaskCreated(tId: Int, componentName: ComponentName?) {}
+        override fun onTaskRemoved(taskId: Int) {
+            if (isDestroy) return
+            taskList.remove(taskId)
+            if (taskList.isEmpty()) {
+                scope.launch(Dispatchers.Main) {
+                    kotlinx.coroutines.delay(500)
+                    if (!isDestroy && taskList.isEmpty()) destroy()
+                }
+            }
+        }
+        override fun onTaskRemovalStarted(taskInfo: ActivityManager.RunningTaskInfo) {
+            if (isDestroy) return
+            taskList.remove(taskInfo.taskId)
+        }
+        override fun onTaskDisplayChanged(tId: Int, newDisplayId: Int) {
+            if (isDestroy) return
+            if (newDisplayId == virtualDisplay.display.displayId) {
+                if (!taskList.contains(tId)) taskList.add(tId)
+                return
+            }
+            if (!taskList.contains(tId)) return
+            if (newDisplayId == Display.DEFAULT_DISPLAY) {
+                if (isFloating) {
+                    context.startService(
+                        Intent(context, FreeformService::class.java)
+                            .setAction(FreeformService.ACTION_START_INTENT)
+                            .putExtra(Intent.EXTRA_INTENT, config.intent)
+                            .putExtra(Intent.EXTRA_COMPONENT_NAME, config.componentName)
+                            .putExtra(Intent.EXTRA_USER, config.userId)
+                    )
+                    return
+                }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    if (config.useSuiRefuseToFullScreen) {
+                        runCatching {
+                            activityTaskManager.moveRootTaskToDisplay(tId, virtualDisplay.display.displayId)
+                        }
+                    } else {
+                        context.startService(
+                            Intent(context, FreeformService::class.java)
+                                .setAction(FreeformService.ACTION_CALL_INTENT)
+                                .putExtra(Intent.EXTRA_INTENT, config.intent)
+                                .putExtra(FreeformService.EXTRA_DISPLAY_ID, virtualDisplay.display.displayId)
+                        )
+                    }
+                }
+            }
+        }
+        override fun onTaskRequestedOrientationChanged(tId: Int, requestedOrientation: Int) {
+            var tempRotation = requestedOrientation
+            if (tempRotation != VIRTUAL_DISPLAY_ROTATION_PORTRAIT && tempRotation != VIRTUAL_DISPLAY_ROTATION_LANDSCAPE) tempRotation = VIRTUAL_DISPLAY_ROTATION_PORTRAIT
+            if (taskList.contains(tId) && tempRotation != virtualDisplayRotation) {
+                virtualDisplayRotation = tempRotation
+                scope.launch(Dispatchers.Main) { onFreeFormRotationChanged() }
+            }
+        }
+        override fun onActivityRequestedOrientationChanged(tId: Int, requestedOrientation: Int) {
+            var tempRotation = requestedOrientation
+            if (tempRotation != VIRTUAL_DISPLAY_ROTATION_PORTRAIT && tempRotation != VIRTUAL_DISPLAY_ROTATION_LANDSCAPE) tempRotation = VIRTUAL_DISPLAY_ROTATION_PORTRAIT
+            if (taskList.contains(tId) && tempRotation != virtualDisplayRotation) {
+                virtualDisplayRotation = tempRotation
+                scope.launch(Dispatchers.Main) { onFreeFormRotationChanged() }
+            }
+        }
+    }
+
+    companion object {
+        private const val TAG = "FreeformView"
+        const val REMEMBER_X = "freeform_remember_x"
+        const val REMEMBER_Y = "freeform_remember_y"
+        const val REMEMBER_LAND_X = "freeform_remember_land_x"
+        const val REMEMBER_LAND_Y = "freeform_remember_land_y"
+        const val REMEMBER_HEIGHT = "freeform_remember_height"
+        const val REMEMBER_LAND_HEIGHT = "freeform_remember_land_height"
+        private const val VIRTUAL_DISPLAY_ROTATION_PORTRAIT = 1
+        private const val VIRTUAL_DISPLAY_ROTATION_LANDSCAPE = 0
+    }
+}
