@@ -110,3 +110,9 @@ Terinspirasi farmerbb/Taskbar (Apache-2.0): tanpa Shizuku/LSPosed, aplikasi dibu
   isi tidak melar). Hidup = rasio dikunci seperti `freeform_update` (isi hanya diskalakan).
   Catatan: kode `Mi-FreeForm-master` di zip freeform_update sendiri mengunci rasio 9:16; tidak ada
   mekanisme resize bebas di sana.
+
+- Perbaikan resize bebas (putaran 9): `resizeVirtualDisplay()` hanya memanggil `VirtualDisplay.resize()` tanpa
+  memperbarui `SurfaceTexture.setDefaultBufferSize()`. Akibatnya setelah jendela dikecilkan, isi aplikasi
+  menciut ke pojok kiri-atas di dalam kartu (terlihat di screenshot). Buffer kini ikut diubah.
+- `lock_resize_ratio` kini default AKTIF (rasio dikunci, isi hanya diskalakan = perilaku v3.1 yang stabil
+  dan sama dengan freeform_update). Mode rasio bebas tetap tersedia dengan mematikan pengaturan itu.

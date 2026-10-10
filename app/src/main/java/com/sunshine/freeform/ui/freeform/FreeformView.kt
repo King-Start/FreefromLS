@@ -989,6 +989,9 @@ class FreeformView(
     }
 
     private fun resizeVirtualDisplay() {
+        // Buffer SurfaceTexture harus ikut diubah; jika tidak, isi virtual display yang lebih kecil
+        // hanya menempati pojok kiri-atas buffer lama (isi aplikasi tampak menciut di dalam kartu).
+        binding.textureView.surfaceTexture?.setDefaultBufferSize(freeformScreenWidth, freeformScreenHeight)
         virtualDisplay.resize(
             freeformScreenWidth,
             freeformScreenHeight,
@@ -2331,7 +2334,7 @@ class FreeformView(
      */
     private fun resizeFromCorner(movedX: Float, movedY: Float, rightSide: Boolean) {
         if (isFloating || rootWidth <= 0 || rootHeight <= 0 || freeformHeight <= 0) return
-        if (!viewModel.getBooleanSp("lock_resize_ratio", false)) {
+        if (!viewModel.getBooleanSp("lock_resize_ratio", true)) {
             // Resize bebas: lebar dan tinggi berubah sendiri-sendiri (rasio tidak dikunci)
             var fw = if (rightSide) freeformWidth + movedX else freeformWidth - movedX
             var fh = freeformHeight + movedY
@@ -2379,7 +2382,7 @@ class FreeformView(
 
     private fun commitCornerResize() {
         if (!isZoomOut) return
-        if (!viewModel.getBooleanSp("lock_resize_ratio", false)) {
+        if (!viewModel.getBooleanSp("lock_resize_ratio", true)) {
             // Rasio bebas: virtual display mengikuti bentuk jendela agar isi tidak melar
             freeformScreenWidth = (freeformWidth - cardWidthMargin).roundToInt()
             freeformScreenHeight = (freeformHeight - cardHeightMargin).roundToInt()

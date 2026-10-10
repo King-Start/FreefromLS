@@ -136,7 +136,7 @@
             android:key="lock_resize_ratio"
             android:title="@string/pref_lock_resize_ratio_title"
             android:summary="@string/pref_lock_resize_ratio_summary"
-            app:defaultValue="false"
+            app:defaultValue="true"
             app:iconSpaceReserved="false"/>
 
         <SwitchPreference
