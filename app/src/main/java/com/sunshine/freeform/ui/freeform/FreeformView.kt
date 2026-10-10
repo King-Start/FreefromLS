@@ -2306,6 +2306,9 @@ class FreeformView(
     }
 
     // ===== RESIZE DENGAN MENARIK SUDUT KIRI/KANAN BAWAH =====
+    private val RESIZE_MIN_SCALE = 0.3f
+    private val RESIZE_MAX_SCALE = 0.9f
+
     private fun setupCornerResizeHandles() {
         val density = context.resources.displayMetrics.density
         fun pill(): android.graphics.drawable.Drawable {
@@ -2313,7 +2316,7 @@ class FreeformView(
                 cornerRadius = 8f * density
                 setColor(0x99FFFFFF.toInt())
             }
-            return android.graphics.drawable.InsetDrawable(shape, (18 * density).toInt(), (16 * density).toInt(), (18 * density).toInt(), (16 * density).toInt())
+            return android.graphics.drawable.InsetDrawable(shape, (22 * density).toInt(), (16 * density).toInt(), (22 * density).toInt(), (16 * density).toInt())
         }
         binding.leftScale.background = pill()
         binding.rightScale.background = pill()
@@ -2321,12 +2324,42 @@ class FreeformView(
         binding.rightScale.setOnTouchListener(ScaleHandleTouchListener(true))
     }
 
+    /**
+     * Sama dengan resizeFreeForm() di freeform_update/FreeFormHookWindow: tarik ke luar = membesar,
+     * ke dalam = mengecil, rasio lebar-tinggi dikunci, batas 30%-90% dari layar, dan jendela
+     * berubah ukuran mengelilingi titik tengahnya (tidak digeser).
+     */
+    private fun resizeFromCorner(movedX: Float, movedY: Float, rightSide: Boolean) {
+        if (isFloating || rootWidth <= 0 || rootHeight <= 0 || freeformHeight <= 0) return
+        val keep = freeformWidth.toFloat() / freeformHeight.toFloat()
+        var w = if (rightSide) freeformWidth + movedX else freeformWidth - movedX
+        var h = freeformHeight + movedY
+        // Jaga rasio: sisi yang lebih kecil ikut menyesuaikan
+        if (w / h > keep) h = w / keep else w = h * keep
+
+        val minW = kotlin.math.max(RESIZE_MIN_SCALE * rootWidth, RESIZE_MIN_SCALE * rootHeight * keep)
+        val maxW = kotlin.math.min(RESIZE_MAX_SCALE * rootWidth, RESIZE_MAX_SCALE * rootHeight * keep)
+        // Jangan melompat bila ukuran awal sudah di luar batas
+        val lower = kotlin.math.min(minW, freeformWidth.toFloat())
+        val upper = kotlin.math.max(maxW, freeformWidth.toFloat())
+        w = w.coerceIn(lower, upper)
+        h = w / keep
+
+        val newW = w.roundToInt()
+        val newH = h.roundToInt()
+        if (newW == freeformWidth && newH == freeformHeight) return
+        freeformWidth = newW
+        freeformHeight = newH
+        mScaleX = freeformWidth / rootWidth.toFloat()
+        mScaleY = freeformHeight / rootHeight.toFloat()
+        isZoomOut = true
+    }
+
     private fun commitCornerResize() {
         if (!isZoomOut) return
-        freeformScreenWidth = (freeformWidth - cardWidthMargin).roundToInt()
-        freeformScreenHeight = (freeformHeight - cardHeightMargin).roundToInt()
-        resizeVirtualDisplay()
-        refreshTouchScale()
+        // Seperti freeform_update: resolusi virtual display TIDAK diubah, isi aplikasi hanya
+        // diskalakan (tanpa reflow), sehingga resize stabil dan tidak membuat aplikasi memuat ulang.
+        // Koordinat sentuh tetap benar karena sentuhan dipetakan lewat transformasi view.
         refreshActionScale()
         if (rememberFreeformSize) {
             if (FreeformHelper.screenIsPortrait(screenRotation)) {
@@ -2363,26 +2396,7 @@ class FreeformView(
                     val dy = event.rawY - lastRawY
                     lastRawX = event.rawX
                     lastRawY = event.rawY
-                    val oldW = freeformWidth
-                    val oldH = freeformHeight
-                    // Tarik keluar/ke bawah = membesar, ke dalam/ke atas = mengecil
-                    val outward = if (rightSide) dx else -dx
-                    if (kotlin.math.abs(outward) >= kotlin.math.abs(dy)) {
-                        handleToFloatScale(outward, 0f)
-                    } else {
-                        handleToFloatScale(0f, dy)
-                    }
-                    val dw = freeformWidth - oldW
-                    val dh = freeformHeight - oldH
-                    if (dw != 0 || dh != 0) {
-                        // Jangkar sudut berlawanan agar sudut yang ditarik mengikuti jari
-                        runCatching {
-                            windowManager.updateViewLayout(binding.root, windowLayoutParams.apply {
-                                x += if (rightSide) dw / 2 else -dw / 2
-                                y += dh / 2
-                            })
-                        }
-                    }
+                    resizeFromCorner(dx, dy, rightSide)
                     return true
                 }
                 MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {

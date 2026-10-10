@@ -94,3 +94,13 @@ Terinspirasi farmerbb/Taskbar (Apache-2.0): tanpa Shizuku/LSPosed, aplikasi dibu
   grid semua aplikasi) + `utils/AppLauncher.kt` (membuka lewat broadcast ke API peluncur, jadi mengikuti
   backend yang dipilih). Pengaturan: `enable_taskbar`, `taskbar_position`, `taskbar_max_recents`,
   akses penggunaan. Aplikasi terbaru: UsageStats bila diizinkan + riwayat peluncuran dari taskbar.
+
+## Resize disamakan dengan freeform_update (putaran 7)
+
+- `hook/view/FreeFormHookWindow.kt` di proyek ini identik 100% dengan versi di `freeform_update-main`
+  (diff 0 baris), jadi jalur LSPosed sudah sama.
+- Resize sudut di `FreeformView` (jalur Shizuku) kini memakai rumus `resizeFreeForm()` versi itu:
+  tarik keluar membesar / ke dalam mengecil, rasio dikunci, batas 30%-90% layar, jendela berubah
+  ukuran mengelilingi titik tengah, handle 64dp. Resolusi virtual display tidak diubah saat resize
+  (isi hanya diskalakan, tanpa reflow aplikasi).
+- Tidak diambil: sisa kode `freeform_update` (versi 2.0.5, lebih lama dari basis ini).
