@@ -76,12 +76,15 @@ class FreeformView(
     private val windowLayoutParams = WindowManager.LayoutParams()
     private val backgroundViewLayoutParams = WindowManager.LayoutParams()
 
+    // q-fix-v3 (#10): previousRotation dipakai untuk skip rotasi 0<->180 atau 90<->270
+    private var previousRotation = defaultDisplay.rotation
     private var screenRotation = defaultDisplay.rotation
     private var virtualDisplayRotation = VIRTUAL_DISPLAY_ROTATION_PORTRAIT
 
     private val iRotationWatcher = object : IRotationWatcher.Stub() {
         override fun onRotationChanged(rotation: Int) {
             if (rotation != screenRotation) {
+                previousRotation = screenRotation
                 screenRotation = rotation
                 scope.launch(Dispatchers.Main) {
                     onScreenOrientationChanged()
@@ -852,7 +855,16 @@ class FreeformView(
             freeformScreenHeight = tempWidth
             freeformScreenWidth = tempHeight
         }
+
+        // q-fix-v3 (#5): guard agar tidak resize(0,0) atau resize negatif
+        if (freeformScreenWidth <= 0 || freeformScreenHeight <= 0) return
+
         refreshFreeformSize()
+
+        // q-fix-v3: pastikan ukuran buffer ikut ukuran window baru setelah rotasi mode miring
+        freeformScreenWidth = (freeformWidth - cardWidthMargin).roundToInt().coerceAtLeast(1)
+        freeformScreenHeight = (freeformHeight - cardHeightMargin).roundToInt().coerceAtLeast(1)
+
         resetScale()
         resizeVirtualDisplay()
         windowManager.updateViewLayout(binding.root, windowLayoutParams.apply {
@@ -861,25 +873,44 @@ class FreeformView(
             x = genCenterLocation()[0]
             y = genCenterLocation()[1]
         })
+        updateResizeHandlesVisibility()
     }
 
+    // q-fix-v3 (#2, #3, #10): guard binding & destroy, skip rotasi yang tidak mengubah rasio
     private fun onScreenOrientationChanged() {
+        if (!::binding.isInitialized || isDestroy) return
+
+        // Skip 0<->180 (portrait ke portrait) dan 90<->270 (landscape ke landscape)
+        val wasPortrait = FreeformHelper.screenIsPortrait(previousRotation)
+        val nowPortrait = FreeformHelper.screenIsPortrait(screenRotation)
+        if (wasPortrait == nowPortrait && screenRotation != previousRotation) {
+            // Orientasi berubah tapi rasio sama, cukup refresh float view size
+            initFloatViewSize()
+            return
+        }
+
         initFloatViewSize()
         updateResizeHandlesVisibility()
 
         refreshFreeformSize()
 
-        if (FreeformHelper.screenIsPortrait(screenRotation)) {
-            if (savedWidthPortrait > 0) {
+        // Terapkan ukuran tersimpan HANYA kalau orientasi key-nya cocok.
+        if (nowPortrait) {
+            if (savedWidthPortrait > 0 && savedHeightPortrait > 0) {
                 freeformWidth = savedWidthPortrait
                 freeformHeight = savedHeightPortrait
             }
         } else {
-            if (savedWidthLandscape > 0) {
+            if (savedWidthLandscape > 0 && savedHeightLandscape > 0) {
                 freeformWidth = savedWidthLandscape
                 freeformHeight = savedHeightLandscape
             }
         }
+
+        // KUNCI BUG ROTATE: sinkronkan buffer virtual display dengan ukuran window baru.
+        freeformScreenWidth = (freeformWidth - cardWidthMargin).roundToInt().coerceAtLeast(1)
+        freeformScreenHeight = (freeformHeight - cardHeightMargin).roundToInt().coerceAtLeast(1)
+        resizeVirtualDisplay()
 
         initFloatBar()
 
@@ -907,7 +938,7 @@ class FreeformView(
                 x = genCenterLocation()[0]
                 y = genCenterLocation()[1]
             }
-            if(!FreeformHelper.screenIsPortrait(screenRotation)) {
+            if (!nowPortrait) {
                 binding.apply {
                     (cardRoot.layoutParams as ConstraintLayout.LayoutParams).apply {
                         topMargin = 0
@@ -937,6 +968,7 @@ class FreeformView(
     }
 
     private fun resizeVirtualDisplay() {
+        if (freeformScreenWidth <= 0 || freeformScreenHeight <= 0) return
         binding.textureView.surfaceTexture?.setDefaultBufferSize(freeformScreenWidth, freeformScreenHeight)
         virtualDisplay.resize(
             freeformScreenWidth,
@@ -975,15 +1007,22 @@ class FreeformView(
     }
 
     private fun refreshFreeformSize() {
-        freeformHeight = if (FreeformHelper.screenIsPortrait(screenRotation)) (rootWidth / config.widthHeightRatio * config.freeformSize).roundToInt() else (rootWidth * config.freeformSizeLand).roundToInt()
+        val isPortrait = FreeformHelper.screenIsPortrait(screenRotation)
+
+        freeformHeight = if (isPortrait) {
+            (rootWidth / config.widthHeightRatio * config.freeformSize).roundToInt()
+        } else {
+            (rootWidth * config.freeformSizeLand).roundToInt()
+        }
         freeformHeight += cardHeightMargin.roundToInt()
         freeformWidth = ((freeformHeight + cardWidthMargin) * config.widthHeightRatio).roundToInt()
+
         if (virtualDisplayRotation == VIRTUAL_DISPLAY_ROTATION_LANDSCAPE) {
             if (freeformHeight > rootWidth) {
                 freeformWidth = (rootWidth - (rootWidth * 0.05)).roundToInt()
-                freeformHeight = ((freeformWidth + cardHeightMargin) * config.widthHeightRatio) .roundToInt()
+                freeformHeight = ((freeformWidth + cardHeightMargin) * config.widthHeightRatio).roundToInt()
             }
-            if (!FreeformHelper.screenIsPortrait(screenRotation)) {
+            if (!isPortrait) {
                 freeformWidth = (realScreenWidth / 2 + cardWidthMargin).roundToInt()
                 freeformHeight = (freeformWidth * config.widthHeightRatio).roundToInt()
             }
@@ -999,10 +1038,14 @@ class FreeformView(
             }
         }
 
-        minFreeformHeight = (freeformHeight * 0.6f).roundToInt()
-        minFreeformWidth = (freeformWidth * 0.6f).roundToInt()
-        maxFreeformHeight = (rootHeight * 0.95f).roundToInt()
-        maxFreeformWidth = (rootWidth * 0.95f).roundToInt()
+        // q-fix-v3: clamp final agar tidak pernah 0/negatif
+        freeformHeight = freeformHeight.coerceAtLeast(1)
+        freeformWidth = freeformWidth.coerceAtLeast(1)
+
+        minFreeformHeight = (freeformHeight * 0.6f).roundToInt().coerceAtLeast(1)
+        minFreeformWidth = (freeformWidth * 0.6f).roundToInt().coerceAtLeast(1)
+        maxFreeformHeight = (rootHeight * 0.95f).roundToInt().coerceAtLeast(1)
+        maxFreeformWidth = (rootWidth * 0.95f).roundToInt().coerceAtLeast(1)
     }
 
     private fun refreshScale() {
@@ -1081,8 +1124,8 @@ class FreeformView(
                 middleGestureDetector.onTouchEvent(event)
                 notifyToFloat()
                 if (isZoomOut) {
-                    freeformScreenWidth = (freeformWidth - cardWidthMargin).roundToInt()
-                    freeformScreenHeight = (freeformHeight - cardHeightMargin).roundToInt()
+                    freeformScreenWidth = (freeformWidth - cardWidthMargin).roundToInt().coerceAtLeast(1)
+                    freeformScreenHeight = (freeformHeight - cardHeightMargin).roundToInt().coerceAtLeast(1)
                     resizeVirtualDisplay()
                     scaleX = (rootWidth - cardWidthMargin) / freeformScreenWidth.toFloat()
                     scaleY = (rootHeight - cardHeightMargin) / freeformScreenHeight.toFloat()
@@ -1103,8 +1146,8 @@ class FreeformView(
                 notifyToFloat()
                 middleGestureDetector.onTouchEvent(event)
                 if (isZoomOut) {
-                    freeformScreenWidth = (freeformWidth - cardWidthMargin).roundToInt()
-                    freeformScreenHeight = (freeformHeight - cardHeightMargin).roundToInt()
+                    freeformScreenWidth = (freeformWidth - cardWidthMargin).roundToInt().coerceAtLeast(1)
+                    freeformScreenHeight = (freeformHeight - cardHeightMargin).roundToInt().coerceAtLeast(1)
                     resizeVirtualDisplay()
                     scaleX = (rootWidth - cardWidthMargin) / freeformScreenWidth.toFloat()
                     scaleY = (rootHeight - cardHeightMargin) / freeformScreenHeight.toFloat()
@@ -1136,8 +1179,9 @@ class FreeformView(
         )
     }
 
+    // q-fix-v3 (#8): jangan panggil refreshFreeformSize() di sini, itu side effect
+    // yang bisa mengubah ukuran window saat restore dari float ke mini.
     private fun getRestoreFreeformScale(): FloatArray {
-        refreshFreeformSize()
         return floatArrayOf(
             freeformWidth / rootWidth.toFloat(),
             freeformHeight / rootHeight.toFloat(),
@@ -1201,6 +1245,7 @@ class FreeformView(
 
     private var isZoomOut = false
 
+    // q-fix-v3 (#6): clamp hasil agar freeformHeight/Width tidak negatif
     private fun handleToFloatScale(dx: Float, dy: Float) {
         if (isFloating) return
 
@@ -1213,6 +1258,8 @@ class FreeformView(
                 if (virtualDisplayRotation == VIRTUAL_DISPLAY_ROTATION_LANDSCAPE) {
                     freeformWidth = ((freeformHeight - (cardHeightMargin * config.widthHeightRatio)) / config.widthHeightRatio).roundToInt()
                 }
+                freeformWidth = freeformWidth.coerceAtLeast(1)
+                freeformHeight = freeformHeight.coerceAtLeast(1)
                 mScaleX = freeformWidth / rootWidth.toFloat()
                 mScaleY = freeformHeight / rootHeight.toFloat()
                 isZoomOut = true
@@ -1226,6 +1273,8 @@ class FreeformView(
                 if (virtualDisplayRotation == VIRTUAL_DISPLAY_ROTATION_LANDSCAPE) {
                     freeformHeight = ((freeformWidth + cardHeightMargin) * config.widthHeightRatio).roundToInt()
                 }
+                freeformWidth = freeformWidth.coerceAtLeast(1)
+                freeformHeight = freeformHeight.coerceAtLeast(1)
                 mScaleX = freeformWidth / rootWidth.toFloat()
                 mScaleY = freeformHeight / rootHeight.toFloat()
                 isZoomOut = true
@@ -1276,6 +1325,8 @@ class FreeformView(
                                         backgroundView.visibility = View.GONE
                                         binding.textureView.setOnTouchListener(null)
                                         isFloating = true
+                                        // q-fix-v3: sembunyikan handle resize saat float
+                                        updateResizeHandlesVisibility()
                                     },
                                     onEnd = {
                                         binding.textureView.setOnTouchListener(FloatViewTouchListener())
@@ -1422,34 +1473,41 @@ class FreeformView(
                 MotionEvent.ACTION_DOWN -> {
                     moveStartX = event.rawX
                     moveStartY = event.rawY
-                    hangUpGestureDetector.onTouchEvent(event)
+                    isMoved = false
+                    // q-fix-v3 (#14): JANGAN forward ACTION_DOWN ke hangUpGestureDetector
+                    // di sini. Tunggu sampai ACTION_UP jika bukan move.
                 }
                 MotionEvent.ACTION_MOVE -> {
                     if (!isWindowLocked) {
                         movedX = event.rawX - moveStartX
                         movedY = event.rawY - moveStartY
-                        isMoved = true
-                        windowManager.updateViewLayout(binding.root, windowLayoutParams.apply {
-                            x += movedX.toInt()
-                            y += movedY.toInt()
-                        })
+                        if (!isMoved && (kotlin.math.abs(movedX) > 8f || kotlin.math.abs(movedY) > 8f)) {
+                            isMoved = true
+                        }
+                        if (isMoved) {
+                            windowManager.updateViewLayout(binding.root, windowLayoutParams.apply {
+                                x += movedX.toInt()
+                                y += movedY.toInt()
+                            })
+                        }
                         moveStartX = event.rawX
                         moveStartY = event.rawY
                     }
                 }
                 MotionEvent.ACTION_UP -> {
                     if (isMoved) {
-                        val nowX = event.rawX
                         val nowY = event.rawY
                         val windowCoordinate = intArrayOf(windowLayoutParams.x, windowLayoutParams.y)
-                        if (viewModel.getBooleanSp("snap_to_edge", true)) {
-                            snapToEdge()
-                        }
 
+                        // q-fix-v3 (#15): cek destroy DULU sebelum snapToEdge
                         if (windowCoordinate[1] >= (realScreenHeight - screenPaddingY) / 2) {
                             destroy()
                             isMoved = false
                             return true
+                        }
+
+                        if (viewModel.getBooleanSp("snap_to_edge", true)) {
+                            snapToEdge()
                         }
 
                         hangUpPosition[0] = windowCoordinate[0] <= 0
@@ -1488,18 +1546,20 @@ class FreeformView(
                                         val floatingButtonWidth = context.resources.getDimension(R.dimen.floating_button_width).toInt()
                                         val floatingButtonHeight = context.resources.getDimension(R.dimen.floating_button_height).toInt()
 
-                                        windowManager.addView(hiddenView, WindowManager.LayoutParams().apply {
-                                            x = (realScreenWidth - floatingButtonWidth) / 2 * position
-                                            y = location[1]
-                                            width = floatingButtonWidth
-                                            height = floatingButtonHeight
-                                            type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
-                                            format = PixelFormat.TRANSLUCENT
-                                            flags = WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
-                                                    WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS or
-                                                    WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
-                                                    WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
-                                        })
+                                        runCatching {
+                                            windowManager.addView(hiddenView, WindowManager.LayoutParams().apply {
+                                                x = (realScreenWidth - floatingButtonWidth) / 2 * position
+                                                y = location[1]
+                                                width = floatingButtonWidth
+                                                height = floatingButtonHeight
+                                                type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
+                                                format = PixelFormat.TRANSLUCENT
+                                                flags = WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
+                                                        WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS or
+                                                        WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                                                        WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
+                                            })
+                                        }
                                     }
                                 },
                                 onEnd = {
@@ -1512,6 +1572,7 @@ class FreeformView(
                             start()
                         }
                     } else {
+                        // q-fix-v3 (#14): single tap → kirim ke hangUpGestureDetector
                         hangUpGestureDetector.onTouchEvent(event)
                     }
                 }
@@ -1590,13 +1651,16 @@ class FreeformView(
                         start()
                     }
                 },
-                onEnd = { backgroundView.visibility = View.VISIBLE }
+                onEnd = {
+                    backgroundView.visibility = View.VISIBLE
+                    isFloating = false
+                    // q-fix-v3: tampilkan kembali handle resize setelah keluar dari float
+                    updateResizeHandlesVisibility()
+                }
             )
             duration = animationDuration(400L)
             start()
         }
-
-        isFloating = false
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -1615,8 +1679,10 @@ class FreeformView(
             playTogether(moveViewAnim(windowCoordinate, location))
             addListener(
                 onStart = {
-                    hiddenView.root.setOnTouchListener(null)
-                    windowManager.removeView(hiddenView)
+                    runCatching {
+                        hiddenView.root.setOnTouchListener(null)
+                        windowManager.removeView(hiddenView)
+                    }
                     isHidden = false
                 },
                 onEnd = {
@@ -1858,10 +1924,12 @@ class FreeformView(
                 width = rootWidth
                 height = rootHeight
             })
+            updateResizeHandlesVisibility()
             return
         }
         isSuspend = true
         saveSizeBeforeSuspend()
+        updateResizeHandlesVisibility()
 
         val isLandscape = freeformWidth > freeformHeight
         val suspendW: Int
@@ -1964,6 +2032,8 @@ class FreeformView(
     private var swipeBackStartX = 0f
     private var swipeBackStartY = 0f
     private var isSwipeBackTracking = false
+    // q-fix-v3 (#12): @Volatile untuk guard multi-touch race
+    @Volatile
     private var swipeIndicatorView: android.widget.ImageView? = null
     private var gestureEdgeDp = 60f
     private var gestureMinDistanceDp = 100f
@@ -2109,11 +2179,13 @@ class FreeformView(
     private val SWIPE_HOME_EDGE_HEIGHT: Float get() = gestureEdgeDp
     private val SWIPE_HOME_MIN_DISTANCE: Float get() = gestureMinDistanceDp
 
+    // q-fix-v3 (#11): guard viewHeight == 0
     private fun handleSwipeHomeGesture(event: MotionEvent): Boolean {
         if (!enableSwipeHome) return false
         val edgeHeight = SWIPE_HOME_EDGE_HEIGHT * context.resources.displayMetrics.density
         val minDistance = SWIPE_HOME_MIN_DISTANCE * context.resources.displayMetrics.density
         val viewHeight = binding.textureView.height.toFloat()
+        if (viewHeight <= 0f) return false
 
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
@@ -2169,6 +2241,7 @@ class FreeformView(
         val edgeWidth = SWIPE_FORWARD_EDGE_WIDTH * context.resources.displayMetrics.density
         val minDistance = SWIPE_FORWARD_MIN_DISTANCE * context.resources.displayMetrics.density
         val viewWidth = binding.textureView.width.toFloat()
+        if (viewWidth <= 0f) return false
 
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
@@ -2235,23 +2308,16 @@ class FreeformView(
     }
 
     private fun updateResizeHandlesVisibility() {
-        // q-fix: handle resize sudut aktif di potret maupun lanskap.
-        // Sembunyikan hanya saat floating/hidden/suspend agar tidak bentrok gesture.
-        val vis = if (!isFloating && !isHidden && !isSuspend) View.VISIBLE else View.GONE
+        if (!::binding.isInitialized) return
+        val vis = if (!isFloating && !isHidden && !isSuspend && !isDestroy) View.VISIBLE else View.GONE
         binding.leftScale.visibility = vis
         binding.rightScale.visibility = vis
     }
 
-    /**
-     * Mode resize bebas: lebar & tinggi independen.
-     * Sekarang berlaku di potret DAN lanskap, selama user tidak mengunci rasio
-     * dan virtual display tidak dalam mode miring.
-     */
     private fun freeResizeEnabled(): Boolean =
         !viewModel.getBooleanSp("lock_resize_ratio", false) &&
             virtualDisplayRotation != VIRTUAL_DISPLAY_ROTATION_LANDSCAPE
 
-    /** Ukuran layout asli (tanpa skala) kartu; dipakai agar ukuran tampak selalu tepat. */
     private fun localWidth(): Int = binding.freeformRoot.width.takeIf { it > 0 } ?: rootWidth
     private fun localHeight(): Int = binding.freeformRoot.height.takeIf { it > 0 } ?: rootHeight
 
@@ -2262,19 +2328,16 @@ class FreeformView(
         return intArrayOf(dm.widthPixels, dm.heightPixels)
     }
 
-    /**
-     * Kotak visual jendela saat ini di koordinat layar fisik.
-     * - Potret: pusat layar + offset window (windowLayoutParams.x/y).
-     * - Lanskap: windowLayoutParams.x/y tetap dihormati (root view memang digeser),
-     *   jadi rumus yang sama tetap valid.
-     */
+    // q-fix-v3 (#4): pakai getLocationOnScreen yang akurat di kedua orientasi
     private fun currentVisualRect(): android.graphics.Rect {
-        val s = screenSize()
-        val cx = s[0] / 2 + windowLayoutParams.x
-        val cy = s[1] / 2 + windowLayoutParams.y
+        if (!::binding.isInitialized) {
+            return android.graphics.Rect(0, 0, freeformWidth, freeformHeight)
+        }
+        val loc = IntArray(2)
+        runCatching { binding.root.getLocationOnScreen(loc) }
         return android.graphics.Rect(
-            cx - freeformWidth / 2, cy - freeformHeight / 2,
-            cx + freeformWidth / 2, cy + freeformHeight / 2
+            loc[0], loc[1],
+            loc[0] + freeformWidth, loc[1] + freeformHeight
         )
     }
 
@@ -2324,10 +2387,6 @@ class FreeformView(
         updateResizePreview(resizeRect)
     }
 
-    /**
-     * Bentuk bebas (lebar dan tinggi sendiri-sendiri) sampai selebar/setinggi layar.
-     * Berlaku di potret & lanskap.
-     */
     private fun updateResize(totalDx: Float, totalDy: Float, rightSide: Boolean) {
         val s = screenSize()
         val sw = s[0]
@@ -2357,11 +2416,8 @@ class FreeformView(
             h = h.coerceIn(minH, maxH)
         }
 
-        // Jangkar: kiri-atas (handle kanan) atau kanan-atas (handle kiri)
         val left = if (rightSide) start.left else start.right - w
         resizeRect.set(left, start.top, left + w, start.top + h)
-
-        // Tetap di dalam layar
         var dx = 0
         var dy = 0
         if (resizeRect.right > sw) dx = sw - resizeRect.right
@@ -2372,36 +2428,39 @@ class FreeformView(
         updateResizePreview(resizeRect)
     }
 
-    /**
-     * Commit hasil resize ke ukuran jendela & virtual display.
-     * Berlaku untuk potret & lanskap; perhitungan offset window memakai
-     * pusat layar fisik sebagai referensi, konsisten dengan currentVisualRect().
-     */
     private fun commitResize() {
         hideResizePreview()
         val w = resizeRect.width()
         val h = resizeRect.height()
-        if (w <= 0 || h <= 0 || resizeRect == resizeStartRect) return
+        if (w <= 0 || h <= 0) return
+
+        // q-fix-v3 (#1): Rect tidak override equals(), jadi bandingkan field satu per satu
+        val unchanged = resizeRect.left == resizeStartRect.left &&
+                resizeRect.top == resizeStartRect.top &&
+                resizeRect.right == resizeStartRect.right &&
+                resizeRect.bottom == resizeStartRect.bottom
+        if (unchanged) return
+
         val s = screenSize()
         val lw = localWidth()
         val lh = localHeight()
-        freeformWidth = kotlin.math.min(w, lw)
-        freeformHeight = kotlin.math.min(h, lh)
-        // Update posisi window supaya pusat tetap di titik yang sama seperti preview
+        freeformWidth = kotlin.math.min(w, lw).coerceAtLeast(1)
+        freeformHeight = kotlin.math.min(h, lh).coerceAtLeast(1)
+        // windowLayoutParams.x/y adalah offset dari pusat layar
         windowLayoutParams.x = resizeRect.centerX() - s[0] / 2
         windowLayoutParams.y = resizeRect.centerY() - s[1] / 2
         mScaleX = freeformWidth / lw.toFloat()
         mScaleY = freeformHeight / lh.toFloat()
-        if (freeResizeEnabled()) {
-            // Mode bebas: virtual display mengikuti bentuk jendela agar isi
-            // aplikasi menyesuaikan (baik potret maupun lanskap).
-            freeformScreenWidth = (freeformWidth - cardWidthMargin).roundToInt().coerceAtLeast(1)
-            freeformScreenHeight = (freeformHeight - cardHeightMargin).roundToInt().coerceAtLeast(1)
-            resizeVirtualDisplay()
-            refreshTouchScale()
-        }
+
+        // Selalu sinkronkan buffer virtual display
+        freeformScreenWidth = (freeformWidth - cardWidthMargin).roundToInt().coerceAtLeast(1)
+        freeformScreenHeight = (freeformHeight - cardHeightMargin).roundToInt().coerceAtLeast(1)
+        resizeVirtualDisplay()
+        refreshTouchScale()
+
         runCatching { windowManager.updateViewLayout(binding.root, windowLayoutParams) }
         refreshActionScale()
+
         if (rememberFreeformSize) {
             if (FreeformHelper.screenIsPortrait(screenRotation)) {
                 savedWidthPortrait = freeformWidth
@@ -2423,8 +2482,11 @@ class FreeformView(
 
         @SuppressLint("ClickableViewAccessibility")
         override fun onTouch(v: View, event: MotionEvent): Boolean {
+            // q-fix-v3 (#3): guard destroy
+            if (isDestroy) return false
             if (isFloating || isHidden || isSuspend) return false
-            // q-fix: handle resize sudut sekarang aktif di potret & lanskap.
+            if (!::binding.isInitialized) return false
+
             when (event.actionMasked) {
                 MotionEvent.ACTION_DOWN -> {
                     downX = event.rawX
@@ -2442,7 +2504,11 @@ class FreeformView(
                 MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
                     if (active) {
                         active = false
-                        if (event.actionMasked == MotionEvent.ACTION_UP) commitResize() else hideResizePreview()
+                        if (event.actionMasked == MotionEvent.ACTION_UP && !isDestroy) {
+                            commitResize()
+                        } else {
+                            hideResizePreview()
+                        }
                     }
                     return true
                 }
@@ -2574,13 +2640,16 @@ class FreeformView(
             if (!taskList.contains(tId)) return
             if (newDisplayId == Display.DEFAULT_DISPLAY) {
                 if (isFloating) {
-                    context.startService(
-                        Intent(context, FreeformService::class.java)
-                            .setAction(FreeformService.ACTION_START_INTENT)
-                            .putExtra(Intent.EXTRA_INTENT, config.intent)
-                            .putExtra(Intent.EXTRA_COMPONENT_NAME, config.componentName)
-                            .putExtra(Intent.EXTRA_USER, config.userId)
-                    )
+                    // q-fix-v3 (#17): runCatching untuk startService di Android 12+
+                    runCatching {
+                        context.startService(
+                            Intent(context, FreeformService::class.java)
+                                .setAction(FreeformService.ACTION_START_INTENT)
+                                .putExtra(Intent.EXTRA_INTENT, config.intent)
+                                .putExtra(Intent.EXTRA_COMPONENT_NAME, config.componentName)
+                                .putExtra(Intent.EXTRA_USER, config.userId)
+                        )
+                    }
                     return
                 }
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -2589,12 +2658,14 @@ class FreeformView(
                             activityTaskManager.moveRootTaskToDisplay(tId, virtualDisplay.display.displayId)
                         }
                     } else {
-                        context.startService(
-                            Intent(context, FreeformService::class.java)
-                                .setAction(FreeformService.ACTION_CALL_INTENT)
-                                .putExtra(Intent.EXTRA_INTENT, config.intent)
-                                .putExtra(FreeformService.EXTRA_DISPLAY_ID, virtualDisplay.display.displayId)
-                        )
+                        runCatching {
+                            context.startService(
+                                Intent(context, FreeformService::class.java)
+                                    .setAction(FreeformService.ACTION_CALL_INTENT)
+                                    .putExtra(Intent.EXTRA_INTENT, config.intent)
+                                    .putExtra(FreeformService.EXTRA_DISPLAY_ID, virtualDisplay.display.displayId)
+                            )
+                        }
                     }
                 }
             }
