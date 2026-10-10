@@ -297,4 +297,6 @@
     <string name="taskbar_usage_access_title">使用情况访问权限</string>
     <string name="taskbar_usage_access_summary">允许使用情况访问，任务栏才能列出最近使用的应用；未授权时只显示从 Mi-Freeform 启动的应用</string>
     <string name="taskbar_need_overlay">请先授予悬浮窗权限</string>
+    <string name="pref_lock_resize_ratio_title">调整大小时锁定宽高比</string>
+    <string name="pref_lock_resize_ratio_summary">关闭：拖动底部两角可自由调整大小（宽高各自变化，应用会适配新尺寸）。开启：保持原始比例。</string>
 </resources>

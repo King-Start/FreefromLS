@@ -234,4 +234,6 @@
     <string name="taskbar_usage_access_title">Usage access</string>
     <string name="taskbar_usage_access_summary">Allow usage access so the taskbar can list recently used apps. Without it, only apps launched from Mi-Freeform appear</string>
     <string name="taskbar_need_overlay">Please allow the overlay permission first</string>
+    <string name="pref_lock_resize_ratio_title">Lock aspect ratio when resizing</string>
+    <string name="pref_lock_resize_ratio_summary">Off: drag the bottom corners to resize freely (width and height change independently, the app re-fits to the new size). On: keep the original proportions.</string>
 </resources>

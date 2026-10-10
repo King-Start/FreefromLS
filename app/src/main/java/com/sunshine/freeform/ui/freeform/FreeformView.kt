@@ -2331,6 +2331,28 @@ class FreeformView(
      */
     private fun resizeFromCorner(movedX: Float, movedY: Float, rightSide: Boolean) {
         if (isFloating || rootWidth <= 0 || rootHeight <= 0 || freeformHeight <= 0) return
+        if (!viewModel.getBooleanSp("lock_resize_ratio", false)) {
+            // Resize bebas: lebar dan tinggi berubah sendiri-sendiri (rasio tidak dikunci)
+            var fw = if (rightSide) freeformWidth + movedX else freeformWidth - movedX
+            var fh = freeformHeight + movedY
+            fw = fw.coerceIn(
+                kotlin.math.min(RESIZE_MIN_SCALE * rootWidth, freeformWidth.toFloat()),
+                kotlin.math.max(RESIZE_MAX_SCALE * rootWidth, freeformWidth.toFloat())
+            )
+            fh = fh.coerceIn(
+                kotlin.math.min(RESIZE_MIN_SCALE * rootHeight, freeformHeight.toFloat()),
+                kotlin.math.max(RESIZE_MAX_SCALE * rootHeight, freeformHeight.toFloat())
+            )
+            val nw = fw.roundToInt()
+            val nh = fh.roundToInt()
+            if (nw == freeformWidth && nh == freeformHeight) return
+            freeformWidth = nw
+            freeformHeight = nh
+            mScaleX = freeformWidth / rootWidth.toFloat()
+            mScaleY = freeformHeight / rootHeight.toFloat()
+            isZoomOut = true
+            return
+        }
         val keep = freeformWidth.toFloat() / freeformHeight.toFloat()
         var w = if (rightSide) freeformWidth + movedX else freeformWidth - movedX
         var h = freeformHeight + movedY
@@ -2357,6 +2379,13 @@ class FreeformView(
 
     private fun commitCornerResize() {
         if (!isZoomOut) return
+        if (!viewModel.getBooleanSp("lock_resize_ratio", false)) {
+            // Rasio bebas: virtual display mengikuti bentuk jendela agar isi tidak melar
+            freeformScreenWidth = (freeformWidth - cardWidthMargin).roundToInt()
+            freeformScreenHeight = (freeformHeight - cardHeightMargin).roundToInt()
+            resizeVirtualDisplay()
+            refreshTouchScale()
+        }
         // Seperti freeform_update: resolusi virtual display TIDAK diubah, isi aplikasi hanya
         // diskalakan (tanpa reflow), sehingga resize stabil dan tidak membuat aplikasi memuat ulang.
         // Koordinat sentuh tetap benar karena sentuhan dipetakan lewat transformasi view.

@@ -219,4 +219,6 @@
     <string name="taskbar_usage_access_title">Akses penggunaan</string>
     <string name="taskbar_usage_access_summary">Izinkan akses penggunaan agar taskbar dapat menampilkan aplikasi yang baru dipakai. Tanpa izin, hanya aplikasi yang dibuka dari Mi-Freeform yang muncul</string>
     <string name="taskbar_need_overlay">Izinkan izin overlay terlebih dahulu</string>
+    <string name="pref_lock_resize_ratio_title">Kunci rasio saat mengubah ukuran</string>
+    <string name="pref_lock_resize_ratio_summary">Mati: tarik kedua sudut bawah untuk mengubah ukuran bebas (lebar dan tinggi berubah sendiri-sendiri, aplikasi menyesuaikan ukuran baru). Hidup: proporsi asli dipertahankan.</string>
 </resources>

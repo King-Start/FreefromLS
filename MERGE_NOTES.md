@@ -104,3 +104,9 @@ Terinspirasi farmerbb/Taskbar (Apache-2.0): tanpa Shizuku/LSPosed, aplikasi dibu
   ukuran mengelilingi titik tengah, handle 64dp. Resolusi virtual display tidak diubah saat resize
   (isi hanya diskalakan, tanpa reflow aplikasi).
 - Tidak diambil: sisa kode `freeform_update` (versi 2.0.5, lebih lama dari basis ini).
+
+- Resize bebas (putaran 8): pengaturan `lock_resize_ratio` (default mati). Mati = lebar dan tinggi berubah
+  sendiri-sendiri; saat dilepas resolusi virtual display mengikuti bentuk jendela (aplikasi menyesuaikan,
+  isi tidak melar). Hidup = rasio dikunci seperti `freeform_update` (isi hanya diskalakan).
+  Catatan: kode `Mi-FreeForm-master` di zip freeform_update sendiri mengunci rasio 9:16; tidak ada
+  mekanisme resize bebas di sana.

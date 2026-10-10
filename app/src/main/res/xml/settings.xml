@@ -133,6 +133,13 @@
             app:showSeekBarValue="true"/>
 
         <SwitchPreference
+            android:key="lock_resize_ratio"
+            android:title="@string/pref_lock_resize_ratio_title"
+            android:summary="@string/pref_lock_resize_ratio_summary"
+            app:defaultValue="false"
+            app:iconSpaceReserved="false"/>
+
+        <SwitchPreference
             android:key="secure_virtual_display"
             android:title="@string/secure_virtual_display_title"
             android:summary="@string/secure_virtual_display_summary"
