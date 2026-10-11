@@ -2356,6 +2356,8 @@ class FreeformView(
         binding.rightScale.visibility = View.VISIBLE
     }
 
+    private val RESIZE_MIN_VD_DP = 220f
+
     private fun freeResizeEnabled(): Boolean =
         !viewModel.getBooleanSp("lock_resize_ratio", false) &&
             virtualDisplayRotation != VIRTUAL_DISPLAY_ROTATION_LANDSCAPE
@@ -2453,8 +2455,16 @@ class FreeformView(
             w = (startW * scale).toInt()
             h = (startH * scale).toInt()
         } else {
-            w = w.coerceIn(minW, maxW)
-            h = h.coerceIn(minH, maxH)
+            // Aplikasi tidak bisa menata ulang di bawah ~220dp (ukuran minimum tugas freeform Android);
+            // lebih kecil dari itu isinya melar/gepeng. Hitung minimum visual dari dp virtual display
+            // dan skala margin kartu.
+            val lw = localWidth()
+            val lh = localHeight()
+            val minVd = RESIZE_MIN_VD_DP * (config.freeformDpi / 160f)
+            val minWFree = kotlin.math.ceil(minVd * lw / (lw - cardWidthMargin).coerceAtLeast(1f)).toInt()
+            val minHFree = kotlin.math.ceil(minVd * lh / (lh - cardHeightMargin).coerceAtLeast(1f)).toInt()
+            w = w.coerceIn(kotlin.math.min(kotlin.math.max(minW, minWFree), maxW), maxW)
+            h = h.coerceIn(kotlin.math.min(kotlin.math.max(minH, minHFree), maxH), maxH)
         }
 
         // Jangkar: kiri-atas (handle kanan) atau kanan-atas (handle kiri)
@@ -2487,8 +2497,10 @@ class FreeformView(
         mScaleY = freeformHeight / lh.toFloat()
         if (freeResizeEnabled()) {
             // Bentuk bebas: virtual display mengikuti bentuk jendela agar isi aplikasi menyesuaikan
-            freeformScreenWidth = (freeformWidth - cardWidthMargin).roundToInt().coerceAtLeast(1)
-            freeformScreenHeight = (freeformHeight - cardHeightMargin).roundToInt().coerceAtLeast(1)
+            // Margin kartu ikut diskalakan oleh mScale, jadi kartu yang tampak berukuran
+            // (lokal - margin) * skala. Samakan virtual display dengan itu agar isi tidak melar.
+            freeformScreenWidth = ((lw - cardWidthMargin) * freeformWidth / lw.toFloat()).roundToInt().coerceAtLeast(1)
+            freeformScreenHeight = ((lh - cardHeightMargin) * freeformHeight / lh.toFloat()).roundToInt().coerceAtLeast(1)
             resizeVirtualDisplay()
             refreshTouchScale()
         }
