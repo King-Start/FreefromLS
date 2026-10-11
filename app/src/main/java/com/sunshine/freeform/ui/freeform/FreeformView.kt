@@ -920,20 +920,10 @@ class FreeformView(
         initFloatViewSize()
         updateResizeHandlesVisibility()
 
-        refreshFreeformSize()
-
-        // Restore ukuran yang disimpan per orientasi
-        if (FreeformHelper.screenIsPortrait(screenRotation)) {
-            if (savedWidthPortrait > 0) {
-                freeformWidth = savedWidthPortrait
-                freeformHeight = savedHeightPortrait
-            }
-        } else {
-            if (savedWidthLandscape > 0) {
-                freeformWidth = savedWidthLandscape
-                freeformHeight = savedHeightLandscape
-            }
-        }
+        // Ukuran hasil tarik sudut bersifat sementara: setiap ganti orientasi kembali ke ukuran normal
+        // (tidak terbawa dari tegak ke miring atau sebaliknya).
+        refreshFreeformSize(false)
+        restoreBaseVirtualDisplaySize()
 
         initFloatBar()
 
@@ -1030,7 +1020,7 @@ class FreeformView(
             .edit().putInt(key, freeformHeight).apply()
     }
 
-    private fun refreshFreeformSize() {
+    private fun refreshFreeformSize(useRemembered: Boolean = true) {
         freeformHeight = if (FreeformHelper.screenIsPortrait(screenRotation)) (rootWidth / config.widthHeightRatio * config.freeformSize).roundToInt() else (rootWidth * config.freeformSizeLand).roundToInt()
         freeformHeight += cardHeightMargin.roundToInt()
         freeformWidth = ((freeformHeight + cardWidthMargin) * config.widthHeightRatio).roundToInt()
@@ -1046,7 +1036,7 @@ class FreeformView(
         }
 
         // Restore the last resized dimensions across freeform service restarts.
-        if (rememberFreeformSize) {
+        if (rememberFreeformSize && useRemembered) {
             val rememberedHeight = rememberedSizeHeight()
             if (rememberedHeight > 0) {
                 val minHeight = (rootHeight * 0.6f).roundToInt()
@@ -1196,7 +1186,8 @@ class FreeformView(
     }
 
     private fun getRestoreFreeformScale(): FloatArray {
-        refreshFreeformSize()
+        restoreBaseVirtualDisplaySize()
+        refreshFreeformSize(false)
         return floatArrayOf(
             freeformWidth / rootWidth.toFloat(),
             freeformHeight / rootHeight.toFloat(),
@@ -2422,7 +2413,30 @@ class FreeformView(
         resizePreview = null
     }
 
+    private var baseScreenWidth = -1
+    private var baseScreenHeight = -1
+
+    private fun rememberBaseVirtualDisplaySize() {
+        if (baseScreenWidth < 0) {
+            baseScreenWidth = freeformScreenWidth
+            baseScreenHeight = freeformScreenHeight
+        }
+    }
+
+    /** Kembalikan resolusi virtual display ke ukuran dasar bila sempat diubah oleh resize bentuk bebas. */
+    private fun restoreBaseVirtualDisplaySize() {
+        if (baseScreenWidth > 0 && baseScreenHeight > 0 &&
+            (freeformScreenWidth != baseScreenWidth || freeformScreenHeight != baseScreenHeight)
+        ) {
+            freeformScreenWidth = baseScreenWidth
+            freeformScreenHeight = baseScreenHeight
+            runCatching { resizeVirtualDisplay() }
+            refreshTouchScale()
+        }
+    }
+
     private fun startResize() {
+        rememberBaseVirtualDisplaySize()
         resizeStartRect.set(currentVisualRect())
         resizeRect.set(resizeStartRect)
         showResizePreview()
@@ -2506,16 +2520,8 @@ class FreeformView(
         }
         runCatching { windowManager.updateViewLayout(binding.root, windowLayoutParams) }
         refreshActionScale()
-        if (rememberFreeformSize) {
-            if (FreeformHelper.screenIsPortrait(screenRotation)) {
-                savedWidthPortrait = freeformWidth
-                savedHeightPortrait = freeformHeight
-            } else {
-                savedWidthLandscape = freeformWidth
-                savedHeightLandscape = freeformHeight
-            }
-            rememberCurrentSize()
-        }
+        // Sengaja tidak disimpan: ukuran hasil tarik sudut hanya sementara. Ukuran kembali normal saat
+        // jendela dipulihkan dari bubble, saat layar diputar, atau saat dibuka lagi.
         isZoomOut = false
     }
 
